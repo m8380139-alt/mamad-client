@@ -1,0 +1,16 @@
+[
+  {
+    "modid": "${modid}",
+    "name": "Mamad Client",
+    "description": "MamadCraft client: capes and more.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://m8380139-alt.github.io/mamadcraft/",
+    "updateUrl": "",
+    "authorList": ["mrfox"],
+    "credits": "Built on Forge1.8.9Template by nea89o (Unlicense)",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
