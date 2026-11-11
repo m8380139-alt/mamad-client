@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 public final class CapeManager {
     private static final String GRAPHQL_URL = "https://vvtyudilywndoyxqiqkm.graphql.eu-central-1.nhost.run/v1";
     private static final String ALLOWED_PREFIX = "https://m8380139-alt.github.io/mamadcraft/";
-    private static final long REFRESH_MS = 5 * 60 * 1000L;
+    private static final long REFRESH_MS = 20 * 1000L;
     private static final int MAX_BYTES = 2 * 1024 * 1024;
 
     // نام (حروف کوچک) -> مکان تکسچر آمادهٔ نمایش
