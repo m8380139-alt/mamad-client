@@ -6,6 +6,8 @@ on:
 jobs:
   gradle:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout source
         uses: actions/checkout@v4.1.1
@@ -27,3 +29,12 @@ jobs:
         with:
           name: mod-jar
           path: build/libs/*.jar
+
+      - name: Publish latest release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp "$(ls build/libs/mamadclient-*.jar | head -1)" mamadclient.jar
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest mamadclient.jar --target "$GITHUB_SHA" --title "Mamad Client (latest)" --notes "Auto-built from ${GITHUB_SHA::7}" --latest
