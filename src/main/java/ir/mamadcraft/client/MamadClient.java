@@ -1,6 +1,8 @@
 package ir.mamadcraft.client;
 
 import ir.mamadcraft.client.cosmetics.CapeManager;
+import ir.mamadcraft.client.gui.BrandingHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 
@@ -15,6 +17,7 @@ public class MamadClient {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         CapeManager.init();
+        MinecraftForge.EVENT_BUS.register(new BrandingHandler());
         System.out.println("[MamadClient] loaded");
     }
 }
