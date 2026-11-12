@@ -94,7 +94,7 @@ public class MamadMainMenu extends GuiScreen {
 
         int pw = 24 + fontRendererObj.getStringWidth(user) + 8;
         roundRect(8, 8, pw, 20, 10, 0xCC141418);
-        roundRect(12, 11, 14, 14, 3, BrandingHandler.ORANGE);
+        logo(12, 11, 14);
         fontRendererObj.drawStringWithShadow(user, 30, 14, 0xFFFFFFFF);
 
         int rw = 24 + fontRendererObj.getStringWidth(user) + 8;
