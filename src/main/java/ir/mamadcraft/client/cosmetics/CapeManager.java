@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -38,6 +39,8 @@ public final class CapeManager {
 
     // نام (حروف کوچک) -> مکان تکسچر آمادهٔ نمایش
     private static final Map<String, ResourceLocation> capes = new HashMap<String, ResourceLocation>();
+    // آدرس کیپی که الان برای هر نام نمایش داده می‌شود (برای دانلود دوباره‌ی بی‌مورد)
+    private static final Map<String, String> capeUrls = new ConcurrentHashMap<String, String>();
     private static final Map<String, Long> lastRequest = new HashMap<String, Long>();
     private static final Set<String> busy = Collections.synchronizedSet(new HashSet<String>());
     private static ExecutorService pool;
@@ -95,13 +98,17 @@ public final class CapeManager {
         JsonObject res = new JsonParser().parse(new String(readAll(c.getInputStream()), StandardCharsets.UTF_8)).getAsJsonObject();
         JsonArray arr = res.getAsJsonObject("data").getAsJsonArray("player_capes");
         if (arr == null || arr.size() == 0) {
-            runOnMain(new Runnable() { public void run() { capes.remove(name); } });
+            runOnMain(new Runnable() { public void run() {
+                capeUrls.remove(name);
+                release(capes.remove(name));
+            } });
             return;
         }
         JsonElement u = arr.get(0).getAsJsonObject().get("texture_url");
         if (u == null || u.isJsonNull()) return;
         final String url = u.getAsString();
         if (!url.startsWith(ALLOWED_PREFIX) || !url.endsWith(".png")) return;
+        if (url.equals(capeUrls.get(name))) return; // همان کیپ قبلی؛ تکسچر تازه نساز
 
         HttpURLConnection ic = (HttpURLConnection) new URL(url).openConnection();
         ic.setConnectTimeout(8000);
@@ -119,9 +126,15 @@ public final class CapeManager {
                 DynamicTexture tex = new DynamicTexture(img);
                 ResourceLocation rl = Minecraft.getMinecraft().getTextureManager()
                         .getDynamicTextureLocation("mamadcape_" + name, tex);
-                capes.put(name, rl);
+                release(capes.put(name, rl));
+                capeUrls.put(name, url);
             }
         });
+    }
+
+    /** تکسچر قبلی را از حافظهٔ کارت گرافیک آزاد می‌کند. */
+    private static void release(ResourceLocation old) {
+        if (old != null) Minecraft.getMinecraft().getTextureManager().deleteTexture(old);
     }
 
     private static void runOnMain(Runnable r) {

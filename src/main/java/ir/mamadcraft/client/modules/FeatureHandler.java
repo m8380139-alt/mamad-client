@@ -16,7 +16,13 @@ public class FeatureHandler {
     public void onTick(TickEvent.ClientTickEvent e) {
         if (e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getMinecraft();
-        if (mc.thePlayer == null) return;
+
+        // اگه با Fullbright روشن از بازی بیرون رفته باشی، gamma توی options.txt روی ۱۰۰ مانده؛ برش می‌گردانیم
+        if (mc.thePlayer == null) {
+            if (oldGamma >= 0f) { mc.gameSettings.gammaSetting = oldGamma; oldGamma = -1f; }
+            else if (!ModuleManager.FULLBRIGHT.enabled && mc.gameSettings.gammaSetting > 1f) mc.gameSettings.gammaSetting = 1f;
+            return;
+        }
 
         if (ModuleManager.FULLBRIGHT.enabled) {
             if (oldGamma < 0f) oldGamma = mc.gameSettings.gammaSetting;
@@ -24,6 +30,8 @@ public class FeatureHandler {
         } else if (oldGamma >= 0f) {
             mc.gameSettings.gammaSetting = oldGamma;
             oldGamma = -1f;
+        } else if (mc.gameSettings.gammaSetting > 1f) {
+            mc.gameSettings.gammaSetting = 1f;
         }
 
         if (mc.currentScreen != null) return;

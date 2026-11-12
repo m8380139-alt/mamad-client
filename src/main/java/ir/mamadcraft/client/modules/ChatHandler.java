@@ -1,6 +1,7 @@
 package ir.mamadcraft.client.modules;
 
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.IChatComponent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -28,8 +29,17 @@ public class ChatHandler {
         if (ModuleManager.FRIENDS.enabled && e.type == 0) {
             String s = e.message.getFormattedText();
             String out = tint(tint(s, ModuleManager.friends, "§a"), ModuleManager.enemies, "§c");
-            if (!out.equals(s)) e.message = new ChatComponentText(out);
+            // پیام‌های دارای کلیک/هاور (لینک، دکمه‌ی سرور) را دست نمی‌زنیم تا خراب نشوند
+            if (!out.equals(s) && !hasEvents(e.message)) e.message = new ChatComponentText(out);
         }
+    }
+
+    private static boolean hasEvents(IChatComponent c) {
+        if (c.getChatStyle().getChatClickEvent() != null || c.getChatStyle().getChatHoverEvent() != null) return true;
+        for (Object o : c.getSiblings()) {
+            if (hasEvents((IChatComponent) o)) return true;
+        }
+        return false;
     }
 
     private static String tint(String s, Set<String> names, String code) {
