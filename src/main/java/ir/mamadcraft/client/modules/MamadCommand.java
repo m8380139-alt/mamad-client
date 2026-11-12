@@ -5,6 +5,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -25,33 +26,76 @@ public class MamadCommand extends CommandBase {
     @Override
     public void processCommand(ICommandSender s, String[] a) throws CommandException {
         if (a.length < 2) { help(s); return; }
-        String cat = a[0].toLowerCase(), sub = a[1].toLowerCase();
+
+        String cat = a[0].toLowerCase(Locale.ROOT);
+        String sub = a[1].toLowerCase(Locale.ROOT);
+
         if (cat.equals("friend") || cat.equals("enemy")) {
             Set<String> mine = cat.equals("friend") ? ModuleManager.friends : ModuleManager.enemies;
             Set<String> other = cat.equals("friend") ? ModuleManager.enemies : ModuleManager.friends;
-            if (sub.equals("list")) { msg(s, cat + "s: " + (mine.isEmpty() ? "-" : mine.toString())); return; }
-            if (a.length < 3 || a[2].length() < 3) { msg(s, "name must be at least 3 letters"); return; }
-            String n = a[2].toLowerCase();
-            if (sub.equals("add")) { mine.add(n); other.remove(n); msg(s, "added " + n + " to " + cat + "s"); }
-            else if (sub.equals("remove")) { mine.remove(n); msg(s, "removed " + n); }
-            else { help(s); return; }
+            if (sub.equals("list")) {
+                String label = cat.equals("friend") ? "friends" : "enemies";
+                msg(s, label + ": " + (mine.isEmpty() ? "-" : mine.toString()));
+                return;
+            }
+            if (a.length < 3 || !a[2].matches("[A-Za-z0-9_]{3,16}")) {
+                msg(s, "name must be a valid Minecraft username (3-16 letters, numbers or underscores)");
+                return;
+            }
+
+            String n = a[2].toLowerCase(Locale.ROOT);
+            if (sub.equals("add")) {
+                mine.add(n);
+                other.remove(n);
+                msg(s, "added " + n + " to " + (cat.equals("friend") ? "friends" : "enemies"));
+            } else if (sub.equals("remove")) {
+                mine.remove(n);
+                msg(s, "removed " + n);
+            } else {
+                help(s);
+                return;
+            }
             ModuleManager.save();
             if (!ModuleManager.FRIENDS.enabled) msg(s, "turn on 'Friend/Enemy Colors' in the menu (Right Shift)");
+
         } else if (cat.equals("crosshair")) {
             if (a.length < 3) { help(s); return; }
+
             if (sub.equals("color")) {
-                try { ModuleManager.crossColor = Integer.parseInt(a[2].replace("#", ""), 16) & 0xFFFFFF; msg(s, "crosshair color set"); }
-                catch (NumberFormatException e) { msg(s, "use a hex color like FF7A00"); return; }
-            } else if (sub.equals("shape") && (a[2].equals("cross") || a[2].equals("dot") || a[2].equals("circle"))) {
-                ModuleManager.crossShape = a[2]; msg(s, "crosshair shape: " + a[2]);
-            } else { help(s); return; }
+                String hex = a[2].startsWith("#") ? a[2].substring(1) : a[2];
+                if (!hex.matches("(?i)[0-9a-f]{6}")) {
+                    msg(s, "use a 6-digit hex color like FF7A00");
+                    return;
+                }
+                ModuleManager.crossColor = Integer.parseInt(hex, 16);
+                msg(s, "crosshair color set");
+
+            } else if (sub.equals("shape")) {
+                String shape = a[2].toLowerCase(Locale.ROOT);
+                if (!shape.equals("cross") && !shape.equals("dot") && !shape.equals("circle")) {
+                    help(s);
+                    return;
+                }
+                ModuleManager.crossShape = shape;
+                msg(s, "crosshair shape: " + shape);
+
+            } else {
+                help(s);
+                return;
+            }
             ModuleManager.save();
             if (!ModuleManager.CROSSHAIR.enabled) msg(s, "turn on 'Custom Crosshair' in the menu (Right Shift)");
+
         } else if (cat.equals("chat") && a.length >= 3) {
+            if (!a[2].equalsIgnoreCase("on") && !a[2].equalsIgnoreCase("off")) {
+                msg(s, "use on or off");
+                return;
+            }
             boolean on = a[2].equalsIgnoreCase("on");
             if (sub.equals("hidesystem")) ModuleManager.hideSystem = on;
             else if (sub.equals("spam")) ModuleManager.filterSpam = on;
             else { help(s); return; }
+
             msg(s, "chat " + sub + ": " + (on ? "on" : "off"));
             ModuleManager.save();
             if (!ModuleManager.CHAT.enabled) msg(s, "turn on 'Chat Tweaks' in the menu (Right Shift)");

@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 /** لیست ماژول‌های HUD و ذخیره/خواندن روشن‌وخاموش بودنشان. */
@@ -43,7 +44,10 @@ public final class ModuleManager {
     private static void loadSet(String v, java.util.Set<String> set) {
         set.clear();
         if (v == null) return;
-        for (String x : v.split(",")) if (!x.trim().isEmpty()) set.add(x.trim().toLowerCase());
+        for (String x : v.split(",")) {
+            String name = x.trim();
+            if (!name.isEmpty()) set.add(name.toLowerCase(Locale.ROOT));
+        }
     }
 
     private static String join(java.util.Set<String> set) {
@@ -76,12 +80,21 @@ public final class ModuleManager {
                 String v = p.getProperty(m.name);
                 if (v != null) m.enabled = Boolean.parseBoolean(v);
             }
-            try { String c = p.getProperty("crosshair.color"); if (c != null) crossColor = Integer.parseInt(c, 16) & 0xFFFFFF; } catch (Exception ignored) {}
-            String sh = p.getProperty("crosshair.shape"); if (sh != null) crossShape = sh;
+            try {
+                String c = p.getProperty("crosshair.color");
+                if (c != null) crossColor = Integer.parseInt(c, 16) & 0xFFFFFF;
+            } catch (Exception ignored) { }
+            String sh = p.getProperty("crosshair.shape");
+            if (sh != null) {
+                String shape = sh.toLowerCase(Locale.ROOT);
+                if (shape.equals("cross") || shape.equals("dot") || shape.equals("circle")) crossShape = shape;
+            }
             hideSystem = Boolean.parseBoolean(p.getProperty("chat.hidesystem", "false"));
             filterSpam = Boolean.parseBoolean(p.getProperty("chat.spam", "true"));
             loadSet(p.getProperty("friends"), friends);
             loadSet(p.getProperty("enemies"), enemies);
+            // Keep each name in only one list, even if an old or edited config overlaps them.
+            enemies.removeAll(friends);
         } catch (Exception e) {
             System.out.println("[MamadClient] config load failed: " + e);
         }

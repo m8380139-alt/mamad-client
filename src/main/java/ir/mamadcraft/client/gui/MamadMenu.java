@@ -44,7 +44,7 @@ public class MamadMenu extends GuiScreen {
                         ry + 6, m.enabled ? 0xFF000000 : 0xFFAAAAAA);
                 ry += ROW;
             }
-            if (n > VISIBLE) fontRendererObj.drawString("scroll for more (" + n + ")", x + 12, y + H - 11, 0xFF888888);
+            if (n > VISIBLE) fontRendererObj.drawString("scroll for more (" + n + ")", x + 12, y + H - 8, 0xFF888888);
         } else {
             fontRendererObj.drawStringWithShadow("Your cape comes from your MamadCraft site account.", x + 14, y + 56, 0xFFFFFFFF);
             fontRendererObj.drawStringWithShadow("Change it on the site; it updates in ~20 seconds.", x + 14, y + 70, 0xFFAAAAAA);
