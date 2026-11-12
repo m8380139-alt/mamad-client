@@ -3,6 +3,7 @@ package ir.mamadcraft.client;
 import ir.mamadcraft.client.cosmetics.CapeManager;
 import ir.mamadcraft.client.gui.BrandingHandler;
 import ir.mamadcraft.client.gui.ExtraHud;
+import ir.mamadcraft.client.gui.MainMenuHandler;
 import ir.mamadcraft.client.gui.HudHandler;
 import ir.mamadcraft.client.gui.CrosshairHandler;
 import ir.mamadcraft.client.modules.ChatHandler;
@@ -38,6 +39,7 @@ public class MamadClient {
         MinecraftForge.EVENT_BUS.register(new ExtraHud());
         MinecraftForge.EVENT_BUS.register(new FeatureHandler());
         MinecraftForge.EVENT_BUS.register(new CrosshairHandler());
+        MinecraftForge.EVENT_BUS.register(new MainMenuHandler());
         MinecraftForge.EVENT_BUS.register(new ChatHandler());
         ClientCommandHandler.instance.registerCommand(new MamadCommand());
         MinecraftForge.EVENT_BUS.register(this);
