@@ -22,6 +22,14 @@ public final class ModuleManager {
     public static final Module CPS = add("CPS", true);
     public static final Module PING = add("Ping", true);
     public static final Module COORDS = add("Coordinates", false);
+    public static final Module KEYSTROKES = add("Keystrokes", false);
+    public static final Module ARMOR = add("Armor Status", false);
+    public static final Module POTIONS = add("Potion Effects", false);
+    public static final Module REACH = add("Reach Display", false);
+    public static final Module SPRINT = add("Toggle Sprint", false);
+    public static final Module SNEAK = add("Toggle Sneak", false);
+    public static final Module FULLBRIGHT = add("Fullbright", false);
+    public static final Module NOHURT = add("No Hurt Cam", false);
 
     private ModuleManager() {}
 

@@ -8,8 +8,9 @@ import java.io.IOException;
 
 /** منوی کلاینت (Right Shift): تب Tools برای ماژول‌ها، تب Custom برای کیپ. */
 public class MamadMenu extends GuiScreen {
-    private static final int W = 260, H = 190;
+    private static final int W = 260, H = 230, ROW = 22, VISIBLE = 8;
     private int tab = 0;
+    private int scroll = 0;
 
     private int x() { return (width - W) / 2; }
     private int y() { return (height - H) / 2; }
@@ -31,16 +32,19 @@ public class MamadMenu extends GuiScreen {
         }
 
         if (tab == 0) {
-            int ry = y + 50;
-            for (ModuleManager.Module m : ModuleManager.MODULES) {
-                Gui.drawRect(x + 10, ry, x + W - 10, ry + 24, 0xFF1B1B20);
-                fontRendererObj.drawStringWithShadow(m.name, x + 18, ry + 8, 0xFFFFFFFF);
+            int ry = y + 46;
+            int n = ModuleManager.MODULES.size();
+            for (int i = scroll; i < Math.min(n, scroll + VISIBLE); i++) {
+                ModuleManager.Module m = ModuleManager.MODULES.get(i);
+                Gui.drawRect(x + 10, ry, x + W - 10, ry + ROW - 2, 0xFF1B1B20);
+                fontRendererObj.drawStringWithShadow(m.name, x + 18, ry + 6, 0xFFFFFFFF);
                 int px = x + W - 56;
-                Gui.drawRect(px, ry + 5, px + 38, ry + 19, m.enabled ? 0xFFFF7A00 : 0xFF3A3A42);
+                Gui.drawRect(px, ry + 3, px + 38, ry + ROW - 5, m.enabled ? 0xFFFF7A00 : 0xFF3A3A42);
                 fontRendererObj.drawString(m.enabled ? "ON" : "OFF", px + 19 - fontRendererObj.getStringWidth(m.enabled ? "ON" : "OFF") / 2,
-                        ry + 8, m.enabled ? 0xFF000000 : 0xFFAAAAAA);
-                ry += 28;
+                        ry + 6, m.enabled ? 0xFF000000 : 0xFFAAAAAA);
+                ry += ROW;
             }
+            if (n > VISIBLE) fontRendererObj.drawString("scroll for more (" + n + ")", x + 12, y + H - 11, 0xFF888888);
         } else {
             fontRendererObj.drawStringWithShadow("Your cape comes from your MamadCraft site account.", x + 14, y + 56, 0xFFFFFFFF);
             fontRendererObj.drawStringWithShadow("Change it on the site; it updates in ~20 seconds.", x + 14, y + 70, 0xFFAAAAAA);
@@ -59,14 +63,26 @@ public class MamadMenu extends GuiScreen {
             if (mx >= tx && mx <= tx + 64 && my >= y + 24 && my <= y + 40) tab = i;
         }
         if (tab == 0) {
-            int ry = y + 50;
-            for (ModuleManager.Module m : ModuleManager.MODULES) {
-                if (mx >= x + 10 && mx <= x + W - 10 && my >= ry && my <= ry + 24) {
+            int ry = y + 46;
+            int n = ModuleManager.MODULES.size();
+            for (int i = scroll; i < Math.min(n, scroll + VISIBLE); i++) {
+                ModuleManager.Module m = ModuleManager.MODULES.get(i);
+                if (mx >= x + 10 && mx <= x + W - 10 && my >= ry && my <= ry + ROW - 2) {
                     m.enabled = !m.enabled;
                     ModuleManager.save();
                 }
-                ry += 28;
+                ry += ROW;
             }
+        }
+    }
+
+    @Override
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        int d = org.lwjgl.input.Mouse.getEventDWheel();
+        if (d != 0 && tab == 0) {
+            int max = Math.max(0, ModuleManager.MODULES.size() - VISIBLE);
+            scroll = Math.max(0, Math.min(max, scroll + (d > 0 ? -1 : 1)));
         }
     }
 

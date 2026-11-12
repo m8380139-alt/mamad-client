@@ -2,7 +2,9 @@ package ir.mamadcraft.client;
 
 import ir.mamadcraft.client.cosmetics.CapeManager;
 import ir.mamadcraft.client.gui.BrandingHandler;
+import ir.mamadcraft.client.gui.ExtraHud;
 import ir.mamadcraft.client.gui.HudHandler;
+import ir.mamadcraft.client.modules.FeatureHandler;
 import ir.mamadcraft.client.gui.MamadMenu;
 import ir.mamadcraft.client.modules.ModuleManager;
 import net.minecraft.client.Minecraft;
@@ -29,6 +31,8 @@ public class MamadClient {
         CapeManager.init();
         MinecraftForge.EVENT_BUS.register(new BrandingHandler());
         MinecraftForge.EVENT_BUS.register(new HudHandler());
+        MinecraftForge.EVENT_BUS.register(new ExtraHud());
+        MinecraftForge.EVENT_BUS.register(new FeatureHandler());
         MinecraftForge.EVENT_BUS.register(this);
         ModuleManager.load();
         menuKey = new KeyBinding("Open Mamad Menu", Keyboard.KEY_RSHIFT, "Mamad Client");
