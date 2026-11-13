@@ -26,6 +26,7 @@ public final class SiteAccount {
     private static final String SUB = "vvtyudilywndoyxqiqkm";
     private static final String REGION = "eu-central-1";
     private static final String AUTH_URL = "https://" + SUB + ".auth." + REGION + ".nhost.run/v1";
+    private static final String GRAPHQL_URL = "https://" + SUB + ".graphql." + REGION + ".nhost.run/v1";
     private static final String FAKE_DOMAIN = "mamadcraft.example";
     public static final Pattern USERNAME_RE = Pattern.compile("^[A-Za-z0-9_]{3,20}$");
 
@@ -147,6 +148,37 @@ public final class SiteAccount {
         save();
     }
 
+    /** درخواست GraphQL با توکن حساب؛ باید از ترد پس‌زمینه صدا زده شود. */
+    public static JsonObject gql(String query, JsonObject vars) throws Exception {
+        ensureToken();
+        JsonObject body = new JsonObject();
+        body.addProperty("query", query);
+        body.add("variables", vars == null ? new JsonObject() : vars);
+        String[] res = post(GRAPHQL_URL, body, accessToken);
+        if (Integer.parseInt(res[0]) != 200) throw new Exception("http " + res[0]);
+        JsonObject root = new JsonParser().parse(res[1]).getAsJsonObject();
+        if (root.has("errors")) {
+            String m = root.getAsJsonArray("errors").get(0).getAsJsonObject().get("message").getAsString();
+            throw new Exception(m);
+        }
+        return root.getAsJsonObject("data");
+    }
+
+    private static synchronized void ensureToken() throws Exception {
+        load();
+        if (accessToken != null && expiresAt - System.currentTimeMillis() > 30000L) return;
+        if (refreshToken == null) throw new Exception("not-signed-in");
+        JsonObject b = new JsonObject();
+        b.addProperty("refreshToken", refreshToken);
+        String[] res = post(AUTH_URL + "/token", b, null);
+        if (Integer.parseInt(res[0]) != 200) {
+            accessToken = null;
+            refreshToken = null;
+            throw new Exception("not-signed-in");
+        }
+        apply(new JsonParser().parse(res[1]).getAsJsonObject(), username);
+    }
+
     private static String describe(int code, String body) {
         String err = "";
         try { err = new JsonParser().parse(body).getAsJsonObject().get("error").getAsString(); } catch (Exception ignored) {}
@@ -158,6 +190,10 @@ public final class SiteAccount {
 
     /** @return {httpCode, body} */
     private static String[] post(String url, JsonObject body) throws Exception {
+        return post(url, body, null);
+    }
+
+    private static String[] post(String url, JsonObject body, String bearer) throws Exception {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(10000);
         c.setReadTimeout(10000);
@@ -165,6 +201,7 @@ public final class SiteAccount {
         c.setDoOutput(true);
         c.setRequestProperty("Content-Type", "application/json");
         c.setRequestProperty("User-Agent", "MamadClient/1.0");
+        if (bearer != null) c.setRequestProperty("Authorization", "Bearer " + bearer);
         OutputStream os = c.getOutputStream();
         os.write(body.toString().getBytes(StandardCharsets.UTF_8));
         os.close();

@@ -45,6 +45,10 @@ public final class CapeManager {
     private static final Set<String> busy = Collections.synchronizedSet(new HashSet<String>());
     private static ExecutorService pool;
 
+    // پیش‌نمایش داخل منو: کیپ انتخاب‌شده روی بازیکن خودمان (فقط تا وقتی منو بازه)
+    public static volatile ResourceLocation previewOverride;
+    public static volatile String previewFor;
+
     private CapeManager() {}
 
     public static void init() {
@@ -59,6 +63,8 @@ public final class CapeManager {
     public static ResourceLocation get(String playerName) {
         if (playerName == null || pool == null) return null;
         final String name = playerName.toLowerCase(Locale.ROOT);
+        ResourceLocation over = previewOverride;
+        if (over != null && previewFor != null && previewFor.equalsIgnoreCase(playerName)) return over;
         long now = System.currentTimeMillis();
         Long last = lastRequest.get(name);
         if ((last == null || now - last > REFRESH_MS) && busy.add(name)) {
@@ -130,6 +136,11 @@ public final class CapeManager {
                 capeUrls.put(name, url);
             }
         });
+    }
+
+    /** بعد از عوض شدن کیپ، دفعهٔ بعد بدون انتظار از سایت دوباره بخوان (ترد اصلی). */
+    public static void invalidate(String playerName) {
+        if (playerName != null) lastRequest.remove(playerName.toLowerCase(Locale.ROOT));
     }
 
     /** تکسچر قبلی را از حافظهٔ کارت گرافیک آزاد می‌کند. */

@@ -116,7 +116,7 @@ public class MamadMainMenu extends GuiScreen {
                 case 2: mc.displayGuiScreen(new GuiOptions(this, mc.gameSettings)); break;
                 case 3: mc.shutdown(); break;
                 case 4: mc.displayGuiScreen(new GuiModList(this)); break;
-                case 5: mc.displayGuiScreen(new MamadMenu()); break;
+                case 5: mc.displayGuiScreen(new MamadMenu(this)); break;
             }
             return;
         }
