@@ -34,6 +34,19 @@ public final class ModuleManager {
     public static final Module CROSSHAIR = add("Custom Crosshair", false);
     public static final Module CHAT = add("Chat Tweaks", false);
     public static final Module FRIENDS = add("Friend/Enemy Colors", false);
+    public static final Module CLOCK = add("Clock", false);
+    public static final Module UPTIME = add("Uptime", false);
+    public static final Module MEMORY = add("Memory", false);
+    public static final Module SERVER = add("Server Address", false);
+    public static final Module COMBO = add("Combo Counter", false);
+    public static final Module ZOOM = add("Zoom", false);
+    public static final Module TIME = add("Time Changer", false);
+    public static final Module WEATHER = add("Weather Changer", false);
+    public static final Module HITBOX = add("Hitbox", false);
+    public static final Module BOSSBAR = add("Boss Bar", true);
+    public static final Module HOTBAR = add("Hot Bar", true);
+    public static final Module TABLIST = add("Tab", true);
+    public static final Module WATERMARK = add("Watermark", true);
 
     public static int crossColor = 0xFF7A00;
     public static String crossShape = "cross";

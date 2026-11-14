@@ -203,7 +203,10 @@ public class MamadMenu extends GuiScreen {
         Ui.logo(ax + 5, y0 + H - 61, 16);
         fontRendererObj.drawString(fontRendererObj.trimStringToWidth(acct, aw - 30), ax + 25, y0 + H - 56,
                 SiteAccount.isLoggedIn() ? 0xFFFFFFFF : 0xFFFFB27A);
-        button("Close", ax, y0 + H - 34, aw, 22, Ui.DANGER, Ui.DANGER_HOVER, 0xFFFF8A8A, mx, my);
+        int px0 = ax + aw / 2 - 13, py0 = y0 + H - 37;
+        boolean ph = Ui.inside(mx, my, px0, py0, 26, 26);
+        Ui.roundRect(px0, py0, 26, 26, 13, ph ? 0xFFEF5350 : Ui.RED);
+        Icons.power(px0 + 6, py0 + 6, 14, 0xFFFFFFFF);
     }
 
     private void drawHeader(int mx, int my) {
@@ -239,12 +242,12 @@ public class MamadMenu extends GuiScreen {
 
     // ---------------------------------------------------------------- Tools
 
-    private int toolCols() { return Math.max(2, Math.min(4, cw / 128)); }
+    private int toolCols() { return Math.max(2, Math.min(4, cw / 112)); }
 
     private void drawTools(int mx, int my) {
         List<ModuleManager.Module> mods = visibleModules();
         int cols = toolCols();
-        int cwid = (cw - GAP * (cols - 1)) / cols, chei = 52;
+        int cwid = (cw - GAP * (cols - 1)) / cols, chei = 78;
         int rows = (mods.size() + cols - 1) / cols;
         float maxScroll = Math.max(0, rows * (chei + GAP) - GAP - ch);
         scroll[0] = Math.max(0, Math.min(maxScroll, scroll[0]));
@@ -256,12 +259,15 @@ public class MamadMenu extends GuiScreen {
             int by = cy + (i / cols) * (chei + GAP) - (int) scroll[0];
             if (by + chei < cy || by > cy + ch) continue;
             boolean hov = Ui.inside(mx, my, bx, by, cwid, chei) && Ui.inside(mx, my, cx, cy, cw, ch);
-            if (m.enabled) Ui.roundRectBorder(bx, by, cwid, chei, 12, hov ? 0x55FF5A00 : 0x40FF5A00, Ui.ACCENT);
+            if (m.enabled) Ui.roundRectBorder(bx, by, cwid, chei, 12, hov ? 0x40FFFFFF : 0x2CFFFFFF, 0xAAFF5A00);
             else Ui.roundRect(bx, by, cwid, chei, 12, hov ? 0x40FFFFFF : 0x28FFFFFF);
-            Ui.roundRect(bx + 10, by + 12, 28, 28, 14, m.enabled ? Ui.ACCENT : 0xFF3A3A42);
-            centered(m.name.substring(0, 1).toUpperCase(Locale.ROOT), bx + 24, by + 22, 0xFFFFFFFF);
-            fontRendererObj.drawString(fontRendererObj.trimStringToWidth(m.name, cwid - 52), bx + 44, by + 14, 0xFFFFFFFF);
-            fontRendererObj.drawString(m.enabled ? "On" : "Off", bx + 44, by + 28, m.enabled ? 0xFF6BE675 : 0xFF8A8A92);
+            int tile = 30, tx = bx + (cwid - tile) / 2, ty = by + 10;
+            Ui.glassTile(tx, ty, tile);
+            if (!Icons.draw(m.name, tx + 6, ty + 6, 18, 0xFFF1F3F6)) {
+                centered(m.name.substring(0, 1).toUpperCase(Locale.ROOT), tx + tile / 2, ty + 11, 0xFFF1F3F6);
+            }
+            Ui.roundRect(bx + cwid - 12, by + 7, 5, 5, 2, m.enabled ? 0xFF6BE675 : 0xFF4A4E56);
+            centered(fontRendererObj.trimStringToWidth(m.name, cwid - 10), bx + cwid / 2, by + chei - 20, 0xFFFFFFFF);
         }
         unclip();
         drawScrollbar(maxScroll, scroll[0]);
@@ -403,7 +409,7 @@ public class MamadMenu extends GuiScreen {
             }
         }
         if (Ui.inside(mx, my, x0 + 12, y0 + H - 64, SW - 18, 22)) { mc.displayGuiScreen(new LoginScreen(this)); return; }
-        if (Ui.inside(mx, my, x0 + 12, y0 + H - 34, SW - 18, 22)) { close(); return; }
+        if (Ui.inside(mx, my, x0 + 12 + (SW - 18) / 2 - 13, y0 + H - 37, 26, 26)) { close(); return; }
 
         // جستجو
         int sw = 132, sx = x0 + W - 14 - sw, sy = y0 + 12;
@@ -420,7 +426,7 @@ public class MamadMenu extends GuiScreen {
         if (!Ui.inside(mx, my, cx, cy, cw, ch)) return;
         List<ModuleManager.Module> mods = visibleModules();
         int cols = toolCols();
-        int cwid = (cw - GAP * (cols - 1)) / cols, chei = 52;
+        int cwid = (cw - GAP * (cols - 1)) / cols, chei = 78;
         for (int i = 0; i < mods.size(); i++) {
             int bx = cx + (i % cols) * (cwid + GAP);
             int by = cy + (i / cols) * (chei + GAP) - (int) scroll[0];

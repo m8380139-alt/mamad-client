@@ -39,7 +39,7 @@ public class BrandingHandler {
     public void onHud(RenderGameOverlayEvent.Post e) {
         if (e.type != RenderGameOverlayEvent.ElementType.ALL) return;
         Minecraft mc = Minecraft.getMinecraft();
-        if (mc.gameSettings.showDebugInfo) return;
+        if (mc.gameSettings.showDebugInfo || !ir.mamadcraft.client.modules.ModuleManager.WATERMARK.enabled) return;
         drawLogo(4, 4, 14);
         mc.fontRendererObj.drawStringWithShadow("Mamad Client", 22, 8, ORANGE);
     }

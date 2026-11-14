@@ -48,6 +48,36 @@ public final class Ui {
         roundRect(x + 1, y + 1, w - 2, h - 2, Math.max(0, r - 1), fill);
     }
 
+    public static int lerp(int a, int b, float t) {
+        int aa = (int) (((a >>> 24) & 255) * (1 - t) + ((b >>> 24) & 255) * t);
+        int rr = (int) (((a >> 16) & 255) * (1 - t) + ((b >> 16) & 255) * t);
+        int gg = (int) (((a >> 8) & 255) * (1 - t) + ((b >> 8) & 255) * t);
+        int bb = (int) ((a & 255) * (1 - t) + (b & 255) * t);
+        return (aa << 24) | (rr << 16) | (gg << 8) | bb;
+    }
+
+    /** مستطیل گرد با شیب رنگ از بالا به پایین. */
+    public static void roundRectV(int x, int y, int w, int h, int r, int top, int bottom) {
+        r = Math.min(r, Math.min(w, h) / 2);
+        for (int dy = 0; dy < h; dy++) {
+            int inset = 0;
+            if (dy < r) {
+                inset = (int) Math.round(r - Math.sqrt((double) r * r - (double) (r - dy) * (r - dy)));
+            } else if (dy >= h - r) {
+                int d = h - 1 - dy;
+                inset = (int) Math.round(r - Math.sqrt((double) r * r - (double) (r - d) * (r - d)));
+            }
+            Gui.drawRect(x + inset, y + dy, x + w - inset, y + dy + 1, lerp(top, bottom, dy / (float) Math.max(1, h - 1)));
+        }
+    }
+
+    /** کاشی شیشه‌ای نقره‌ای زیر آیکون ابزارها. */
+    public static void glassTile(int x, int y, int s) {
+        roundRect(x - 1, y - 1, s + 2, s + 2, 9, 0x55FFFFFF);
+        roundRectV(x, y, s, s, 8, 0xDD9AA1AD, 0xDD4E535D);
+        roundRect(x + 2, y + 2, s - 4, s / 2 - 1, 6, 0x26FFFFFF);
+    }
+
     public static void logo(int x, int y, int size) {
         Minecraft.getMinecraft().getTextureManager().bindTexture(LOGO);
         GlStateManager.enableBlend();
