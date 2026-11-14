@@ -43,6 +43,8 @@ public final class Ui {
     /** مستطیل گرد با حاشیهٔ رنگی (۱ پیکسل). */
     public static void roundRectBorder(int x, int y, int w, int h, int r, int fill, int border) {
         roundRect(x, y, w, h, r, border);
+        // پایهٔ مات تا رنگِ حاشیه از زیرِ پُرشدگی نیمه‌شفاف بیرون نزند
+        roundRect(x + 1, y + 1, w - 2, h - 2, Math.max(0, r - 1), 0xFF15171B);
         roundRect(x + 1, y + 1, w - 2, h - 2, Math.max(0, r - 1), fill);
     }
 

@@ -43,6 +43,8 @@ public class MamadMenu extends GuiScreen {
     private int lastDragX;
     private int x0, y0, W, H;
     private int cx, cy, cw, ch;
+    private boolean scaleApplied;
+    private int savedGuiScale;
 
     public MamadMenu() { this(null); }
 
@@ -52,6 +54,19 @@ public class MamadMenu extends GuiScreen {
 
     @Override
     public void initGui() {
+        if (!scaleApplied) {
+            // منو را روی اندازهٔ ثابت و خوانا نگه می‌داریم (GUI Scale خیلی بزرگ باعث بریده‌شدن می‌شد)
+            scaleApplied = true;
+            savedGuiScale = mc.gameSettings.guiScale;
+            int cur = new ScaledResolution(mc).getScaleFactor();
+            int fit = Math.max(1, Math.min(cur, Math.min(mc.displayWidth / 560, mc.displayHeight / 340)));
+            if (fit != cur) {
+                mc.gameSettings.guiScale = fit;
+                ScaledResolution sr = new ScaledResolution(mc);
+                setWorldAndResolution(mc, sr.getScaledWidth(), sr.getScaledHeight());
+                return;
+            }
+        }
         Keyboard.enableRepeatEvents(true);
         ImageCache.retryFailed();
         if (SiteAccount.isLoggedIn()) CapeStore.refresh();
@@ -60,6 +75,7 @@ public class MamadMenu extends GuiScreen {
 
     @Override
     public void onGuiClosed() {
+        if (scaleApplied) { mc.gameSettings.guiScale = savedGuiScale; scaleApplied = false; }
         Keyboard.enableRepeatEvents(false);
         CapeManager.previewOverride = null;
         CapeManager.previewFor = null;
@@ -98,6 +114,16 @@ public class MamadMenu extends GuiScreen {
 
     private void centered(String s, int midX, int y, int color) {
         fontRendererObj.drawString(s, midX - fontRendererObj.getStringWidth(s) / 2, y, color);
+    }
+
+    /** متن فارسی/عربی را با بازآرایی راست‌به‌چپ می‌کشد (فونت ماینکرفت خودش حروف را نمی‌چسباند). */
+    private void text(String s, int x, int y, int color) {
+        boolean rtl = false;
+        for (int i = 0; i < s.length(); i++) if (s.charAt(i) >= 0x0590 && s.charAt(i) <= 0x08FF) { rtl = true; break; }
+        boolean old = fontRendererObj.getBidiFlag();
+        if (rtl) fontRendererObj.setBidiFlag(true);
+        fontRendererObj.drawString(s, x, y, color);
+        fontRendererObj.setBidiFlag(old);
     }
 
     private void button(String label, int x, int y, int w, int h, int base, int hover, int text, int mx, int my) {
@@ -301,7 +327,7 @@ public class MamadMenu extends GuiScreen {
             } else {
                 centered("...", bx + cwid / 2, by + 8 + availH / 2 - 4, 0xFF777780);
             }
-            fontRendererObj.drawString(fontRendererObj.trimStringToWidth(c.name, cwid - 12), bx + 8, by + chei - 26, 0xFFFFFFFF);
+            text(fontRendererObj.trimStringToWidth(c.name, cwid - 12), bx + 8, by + chei - 26, 0xFFFFFFFF);
             boolean eq = c.id.equals(CapeStore.equippedId);
             boolean own = CapeStore.owned.contains(c.id);
             String st = eq ? "Equipped" : own ? "Owned" : c.freeNow ? "Free" : "Locked";
@@ -343,7 +369,8 @@ public class MamadMenu extends GuiScreen {
 
         // نام و دکمهٔ عمل
         if (sel != null) {
-            centered(fontRendererObj.trimStringToWidth(sel.name, pw - 16), px + pw / 2, cy + ch - 62, 0xFFFFFFFF);
+            String nm = fontRendererObj.trimStringToWidth(sel.name, pw - 16);
+            text(nm, px + (pw - fontRendererObj.getStringWidth(nm)) / 2, cy + ch - 62, 0xFFFFFFFF);
             boolean eq = sel.id.equals(CapeStore.equippedId);
             boolean own = CapeStore.owned.contains(sel.id);
             String label;

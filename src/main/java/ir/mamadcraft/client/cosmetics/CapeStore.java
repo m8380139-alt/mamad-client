@@ -48,6 +48,16 @@ public final class CapeStore {
         return pool;
     }
 
+    private static final String SITE = "https://m8380139-alt.github.io/mamadcraft/";
+
+    /** آدرس نسبی سایت (assets/...) را کامل می‌کند تا ImageCache آن را قبول کند. */
+    private static String absolute(String u) {
+        if (u == null || u.isEmpty()) return null;
+        if (u.startsWith("http://") || u.startsWith("https://")) return u;
+        while (u.startsWith("./") || u.startsWith("/")) u = u.startsWith("./") ? u.substring(2) : u.substring(1);
+        return SITE + u;
+    }
+
     private static String str(JsonObject o, String k) {
         JsonElement e = o.get(k);
         return e == null || e.isJsonNull() ? null : e.getAsString();
@@ -65,7 +75,7 @@ public final class CapeStore {
             Cosmetic c = new Cosmetic();
             c.id = str(o, "id");
             c.name = str(o, "name");
-            c.previewUrl = str(o, "preview_url");
+            c.previewUrl = absolute(str(o, "preview_url"));
             c.price = o.has("price_irt") && !o.get("price_irt").isJsonNull() ? o.get("price_irt").getAsInt() : 0;
             c.freeNow = o.has("free_for_now") && !o.get("free_for_now").isJsonNull() && o.get("free_for_now").getAsBoolean();
             list.add(c);
