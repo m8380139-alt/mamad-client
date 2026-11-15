@@ -144,7 +144,11 @@ public class MamadMenu extends GuiScreen {
 
     private List<CapeStore.Cosmetic> visibleCapes() {
         List<CapeStore.Cosmetic> out = new ArrayList<CapeStore.Cosmetic>();
-        for (CapeStore.Cosmetic c : CapeStore.items) if (c.name != null && matches(c.name)) out.add(c);
+        // فقط کیپ‌هایی که در سایت به اکانت اضافه شده‌اند (یا الان انتخاب‌شده‌اند)
+        for (CapeStore.Cosmetic c : CapeStore.items) {
+            boolean mine = CapeStore.owned.contains(c.id) || c.id.equals(CapeStore.equippedId);
+            if (mine && c.name != null && matches(c.name)) out.add(c);
+        }
         return out;
     }
 
@@ -342,6 +346,10 @@ public class MamadMenu extends GuiScreen {
         }
         unclip();
         drawScrollbar(maxScroll, scroll[1]);
+        if (capes.isEmpty() && CapeStore.loadedOnce && !CapeStore.busy) {
+            centered("No capes on your account yet.", cx + gw / 2, cy + ch / 2 - 10, 0xFFDDDDDD);
+            centered("Add some on the MamadCraft site (capes page).", cx + gw / 2, cy + ch / 2 + 4, 0xFF8A8A92);
+        }
 
         drawCapePanel(cx + gw + 10, panelW, sel, mx, my);
     }
