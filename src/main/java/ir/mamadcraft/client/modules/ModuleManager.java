@@ -47,6 +47,11 @@ public final class ModuleManager {
     public static final Module HOTBAR = add("Hot Bar", true);
     public static final Module TABLIST = add("Tab", true);
     public static final Module WATERMARK = add("Watermark", true);
+    public static final Module BOOST = add("FPS Boost", false);
+    public static final Module CULLING = add("Entity Culling", false);
+
+    /** تنظیمات اصلی بازی قبل از FPS Boost، تا با خاموش‌کردن (حتی بعد از ری‌استارت) برگردند. */
+    public static final java.util.Map<String, String> perfOrig = new java.util.LinkedHashMap<String, String>();
 
     public static int crossColor = 0xFF7A00;
     public static String crossShape = "cross";
@@ -104,6 +109,10 @@ public final class ModuleManager {
             }
             hideSystem = Boolean.parseBoolean(p.getProperty("chat.hidesystem", "false"));
             filterSpam = Boolean.parseBoolean(p.getProperty("chat.spam", "true"));
+            perfOrig.clear();
+            for (String k : p.stringPropertyNames()) {
+                if (k.startsWith("perf.orig.")) perfOrig.put(k.substring("perf.orig.".length()), p.getProperty(k));
+            }
             loadSet(p.getProperty("friends"), friends);
             loadSet(p.getProperty("enemies"), enemies);
             // Keep each name in only one list, even if an old or edited config overlaps them.
@@ -121,6 +130,7 @@ public final class ModuleManager {
             p.setProperty("crosshair.shape", crossShape);
             p.setProperty("chat.hidesystem", String.valueOf(hideSystem));
             p.setProperty("chat.spam", String.valueOf(filterSpam));
+            for (java.util.Map.Entry<String, String> en : perfOrig.entrySet()) p.setProperty("perf.orig." + en.getKey(), en.getValue());
             p.setProperty("friends", join(friends));
             p.setProperty("enemies", join(enemies));
             p.store(out, "Mamad Client");

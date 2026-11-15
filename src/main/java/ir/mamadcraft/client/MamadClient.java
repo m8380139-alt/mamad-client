@@ -42,6 +42,7 @@ public class MamadClient {
         MinecraftForge.EVENT_BUS.register(new MainMenuHandler());
         MinecraftForge.EVENT_BUS.register(new ChatHandler());
         MinecraftForge.EVENT_BUS.register(new ir.mamadcraft.client.modules.ToolsHandler());
+        MinecraftForge.EVENT_BUS.register(new ir.mamadcraft.client.modules.PerfHandler());
         ir.mamadcraft.client.modules.ToolsHandler.zoomKey = new KeyBinding("Zoom", Keyboard.KEY_C, "Mamad Client");
         ClientRegistry.registerKeyBinding(ir.mamadcraft.client.modules.ToolsHandler.zoomKey);
         ClientCommandHandler.instance.registerCommand(new MamadCommand());
