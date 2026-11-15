@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
@@ -17,9 +18,12 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -34,14 +38,18 @@ import java.util.concurrent.Executors;
 public final class CapeManager {
     private static final String GRAPHQL_URL = "https://vvtyudilywndoyxqiqkm.graphql.eu-central-1.nhost.run/v1";
     private static final String ALLOWED_PREFIX = "https://m8380139-alt.github.io/mamadcraft/";
-    private static final long REFRESH_MS = 20 * 1000L;
+    private static final long POLL_MS = 3000L;   // هر چند میلی‌ثانیه کیپ‌ها از سایت چک شوند
+    private static final long SEEN_MS = 15000L;  // بازیکنی که تا این مدت دیده نشده از چک حذف می‌شود
+    private static final int MAX_NAMES = 60;
     private static final int MAX_BYTES = 2 * 1024 * 1024;
 
     // نام (حروف کوچک) -> مکان تکسچر آمادهٔ نمایش
     private static final Map<String, ResourceLocation> capes = new HashMap<String, ResourceLocation>();
     // آدرس کیپی که الان برای هر نام نمایش داده می‌شود (برای دانلود دوباره‌ی بی‌مورد)
     private static final Map<String, String> capeUrls = new ConcurrentHashMap<String, String>();
-    private static final Map<String, Long> lastRequest = new HashMap<String, Long>();
+    // نام (حروف کوچک) -> آخرین باری که بازیکن دیده شد
+    private static final Map<String, Long> seen = new ConcurrentHashMap<String, Long>();
+    private static volatile boolean pollSoon;
     private static final Set<String> busy = Collections.synchronizedSet(new HashSet<String>());
     private static ExecutorService pool;
 
@@ -57,35 +65,50 @@ public final class CapeManager {
             t.setDaemon(true);
             return t;
         });
+        Thread poller = new Thread(new Runnable() { public void run() { pollLoop(); } }, "MamadClient-CapePoll");
+        poller.setDaemon(true);
+        poller.start();
     }
 
-    /** از ترد رندر صدا زده می‌شود؛ سریع برمی‌گردد و اگر لازم باشد دانلود را در پس‌زمینه شروع می‌کند. */
+    /** از ترد رندر صدا زده می‌شود؛ فقط بازیکن را ثبت می‌کند و تکسچر آماده را برمی‌گرداند. */
     public static ResourceLocation get(String playerName) {
         if (playerName == null || pool == null) return null;
         final String name = playerName.toLowerCase(Locale.ROOT);
         ResourceLocation over = previewOverride;
         if (over != null && previewFor != null && previewFor.equalsIgnoreCase(playerName)) return over;
-        long now = System.currentTimeMillis();
-        Long last = lastRequest.get(name);
-        if ((last == null || now - last > REFRESH_MS) && busy.add(name)) {
-            lastRequest.put(name, now);
-            pool.submit(() -> {
-                try {
-                    fetch(name);
-                } catch (Exception e) {
-                    System.out.println("[MamadClient] cape fetch failed for " + name + ": " + e);
-                } finally {
-                    busy.remove(name);
-                }
-            });
-        }
+        if (seen.put(name, System.currentTimeMillis()) == null) pollSoon = true; // بازیکن تازه: زود چک کن
         return capes.get(name);
     }
 
-    private static void fetch(final String name) throws Exception {
-        String query = "query($n:String!){player_capes(where:{name:{_eq:$n},category:{_eq:\"cape\"}}){texture_url}}";
+    private static void pollLoop() {
+        while (true) {
+            try {
+                pollOnce();
+            } catch (Exception e) {
+                System.out.println("[MamadClient] cape poll failed: " + e);
+            }
+            for (int i = 0; i < 15 && !pollSoon; i++) {
+                try { Thread.sleep(POLL_MS / 15); } catch (InterruptedException ie) { return; }
+            }
+            pollSoon = false;
+        }
+    }
+
+    /** کیپ همهٔ بازیکن‌هایی که اخیراً دیده شده‌اند را با یک درخواست می‌خواند. */
+    private static void pollOnce() throws Exception {
+        long now = System.currentTimeMillis();
+        final List<String> list = new ArrayList<String>();
+        JsonArray names = new JsonArray();
+        for (Iterator<Map.Entry<String, Long>> it = seen.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<String, Long> e = it.next();
+            if (now - e.getValue() > SEEN_MS) { it.remove(); continue; }
+            if (list.size() < MAX_NAMES) { list.add(e.getKey()); names.add(new JsonPrimitive(e.getKey())); }
+        }
+        if (list.isEmpty()) return;
+
+        String query = "query($n:[String!]!){player_capes(where:{name:{_in:$n},category:{_eq:\"cape\"}}){name texture_url}}";
         JsonObject vars = new JsonObject();
-        vars.addProperty("n", name);
+        vars.add("n", names);
         JsonObject body = new JsonObject();
         body.addProperty("query", query);
         body.add("variables", vars);
@@ -102,19 +125,42 @@ public final class CapeManager {
         os.close();
         if (c.getResponseCode() != 200) return;
         JsonObject res = new JsonParser().parse(new String(readAll(c.getInputStream()), StandardCharsets.UTF_8)).getAsJsonObject();
+        if (!res.has("data") || res.get("data").isJsonNull()) return;
         JsonArray arr = res.getAsJsonObject("data").getAsJsonArray("player_capes");
-        if (arr == null || arr.size() == 0) {
-            runOnMain(new Runnable() { public void run() {
-                capeUrls.remove(name);
-                release(capes.remove(name));
-            } });
-            return;
+        if (arr == null) return;
+
+        Map<String, String> urls = new HashMap<String, String>();
+        for (JsonElement el : arr) {
+            JsonObject o = el.getAsJsonObject();
+            JsonElement n = o.get("name"), u = o.get("texture_url");
+            if (n == null || n.isJsonNull() || u == null || u.isJsonNull()) continue;
+            String key = n.getAsString().toLowerCase(Locale.ROOT);
+            if (!urls.containsKey(key)) urls.put(key, u.getAsString());
         }
-        JsonElement u = arr.get(0).getAsJsonObject().get("texture_url");
-        if (u == null || u.isJsonNull()) return;
-        final String url = u.getAsString();
+        for (final String name : list) {
+            final String url = urls.get(name);
+            if (url == null) {
+                if (!capes.containsKey(name)) continue;
+                runOnMain(new Runnable() { public void run() {
+                    capeUrls.remove(name);
+                    release(capes.remove(name));
+                } });
+            } else if (!url.equals(capeUrls.get(name)) && busy.add(name)) {
+                pool.submit(new Runnable() { public void run() {
+                    try {
+                        download(name, url);
+                    } catch (Exception e) {
+                        System.out.println("[MamadClient] cape download failed for " + name + ": " + e);
+                    } finally {
+                        busy.remove(name);
+                    }
+                } });
+            }
+        }
+    }
+
+    private static void download(final String name, final String url) throws Exception {
         if (!url.startsWith(ALLOWED_PREFIX) || !url.endsWith(".png")) return;
-        if (url.equals(capeUrls.get(name))) return; // همان کیپ قبلی؛ تکسچر تازه نساز
 
         HttpURLConnection ic = (HttpURLConnection) new URL(url).openConnection();
         ic.setConnectTimeout(8000);
@@ -140,7 +186,7 @@ public final class CapeManager {
 
     /** بعد از عوض شدن کیپ، دفعهٔ بعد بدون انتظار از سایت دوباره بخوان (ترد اصلی). */
     public static void invalidate(String playerName) {
-        if (playerName != null) lastRequest.remove(playerName.toLowerCase(Locale.ROOT));
+        if (playerName != null) { seen.put(playerName.toLowerCase(Locale.ROOT), System.currentTimeMillis()); pollSoon = true; }
     }
 
     /** تکسچر قبلی را از حافظهٔ کارت گرافیک آزاد می‌کند. */
