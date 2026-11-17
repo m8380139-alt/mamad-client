@@ -25,29 +25,45 @@ public class HudHandler {
         return clicks.size();
     }
 
-    private void line(Minecraft mc, int y, String label, String value) {
-        mc.fontRendererObj.drawStringWithShadow(label + ": ", 4, y, BrandingHandler.ORANGE);
-        mc.fontRendererObj.drawStringWithShadow(value, 4 + mc.fontRendererObj.getStringWidth(label + ": "), y, 0xFFFFFFFF);
-    }
-
     @SubscribeEvent
     public void onHud(RenderGameOverlayEvent.Post e) {
         if (e.type != RenderGameOverlayEvent.ElementType.ALL) return;
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.gameSettings.showDebugInfo || mc.thePlayer == null) return;
-        int y = 24;
-        if (ModuleManager.FPS.enabled) { line(mc, y, "FPS", String.valueOf(Minecraft.getDebugFPS())); y += 11; }
-        if (ModuleManager.CPS.enabled) { line(mc, y, "CPS", String.valueOf(cps())); y += 11; }
+
+        java.util.List<String[]> rows = new java.util.ArrayList<String[]>();
+        if (ModuleManager.FPS.enabled) rows.add(new String[]{"FPS", String.valueOf(Minecraft.getDebugFPS())});
+        if (ModuleManager.CPS.enabled) rows.add(new String[]{"CPS", String.valueOf(cps())});
         if (ModuleManager.PING.enabled) {
             int ping = 0;
             if (mc.getNetHandler() != null) {
                 NetworkPlayerInfo info = mc.getNetHandler().getPlayerInfo(mc.thePlayer.getUniqueID());
                 if (info != null) ping = info.getResponseTime();
             }
-            line(mc, y, "Ping", ping + " ms"); y += 11;
+            rows.add(new String[]{"Ping", ping + " ms"});
         }
         if (ModuleManager.COORDS.enabled) {
-            line(mc, y, "XYZ", (int) mc.thePlayer.posX + " " + (int) mc.thePlayer.posY + " " + (int) mc.thePlayer.posZ);
+            rows.add(new String[]{"XYZ", (int) mc.thePlayer.posX + " " + (int) mc.thePlayer.posY + " " + (int) mc.thePlayer.posZ});
+        }
+        if (rows.isEmpty()) return;
+
+        // یک پنل گرد و نیمه‌شفاف با خط نارنجی کنار؛ مقدارها زیر هم تراز می‌شوند
+        net.minecraft.client.gui.FontRenderer fr = mc.fontRendererObj;
+        int labelW = 0, valueW = 0;
+        for (String[] r : rows) {
+            labelW = Math.max(labelW, fr.getStringWidth(r[0]));
+            valueW = Math.max(valueW, fr.getStringWidth(r[1]));
+        }
+        int x = 4, y = 24, pad = 6, gap = 6;
+        int w = pad + labelW + gap + valueW + pad;
+        int h = rows.size() * 11 + 7;
+        Ui.roundRect(x, y, w, h, 6, 0x9A101216);
+        Ui.roundRect(x, y + 4, 2, h - 8, 1, Ui.ACCENT);
+        int ty = y + 4;
+        for (String[] r : rows) {
+            fr.drawStringWithShadow(r[0], x + pad, ty, BrandingHandler.ORANGE);
+            fr.drawStringWithShadow(r[1], x + pad + labelW + gap, ty, 0xFFFFFFFF);
+            ty += 11;
         }
     }
 }

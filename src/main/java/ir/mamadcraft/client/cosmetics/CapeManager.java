@@ -44,7 +44,10 @@ public final class CapeManager {
     private static final int MAX_BYTES = 2 * 1024 * 1024;
 
     // نام (حروف کوچک) -> مکان تکسچر آمادهٔ نمایش
-    private static final Map<String, ResourceLocation> capes = new HashMap<String, ResourceLocation>();
+    private static final Map<String, ResourceLocation> capes = new ConcurrentHashMap<String, ResourceLocation>();
+    // بعد از هر تلاش دانلود، تا این زمان دوباره برای همان آدرس تلاش نمی‌کنیم (جلوگیری از اسپم شبکه)
+    private static final Map<String, Long> retryAfter = new ConcurrentHashMap<String, Long>();
+    private static final long RETRY_MS = 30000L;
     // آدرس کیپی که الان برای هر نام نمایش داده می‌شود (برای دانلود دوباره‌ی بی‌مورد)
     private static final Map<String, String> capeUrls = new ConcurrentHashMap<String, String>();
     // نام (حروف کوچک) -> آخرین باری که بازیکن دیده شد
@@ -145,13 +148,14 @@ public final class CapeManager {
                     capeUrls.remove(name);
                     release(capes.remove(name));
                 } });
-            } else if (!url.equals(capeUrls.get(name)) && busy.add(name)) {
+            } else if (!url.equals(capeUrls.get(name)) && now >= retryAfter.getOrDefault(name + "|" + url, 0L) && busy.add(name)) {
                 pool.submit(new Runnable() { public void run() {
                     try {
                         download(name, url);
                     } catch (Exception e) {
                         System.out.println("[MamadClient] cape download failed for " + name + ": " + e);
                     } finally {
+                        retryAfter.put(name + "|" + url, System.currentTimeMillis() + RETRY_MS);
                         busy.remove(name);
                     }
                 } });

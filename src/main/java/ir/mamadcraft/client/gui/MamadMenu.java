@@ -78,6 +78,7 @@ public class MamadMenu extends GuiScreen {
     private int cx, cy, cw, ch;
     private boolean scaleApplied;
     private int savedGuiScale;
+    private boolean keepScale;   // وقتی صفحهٔ لاگین باز می‌شود، اسکیل ثابت بماند
 
     public MamadMenu() { this(null); }
 
@@ -109,7 +110,8 @@ public class MamadMenu extends GuiScreen {
 
     @Override
     public void onGuiClosed() {
-        if (scaleApplied) { mc.gameSettings.guiScale = savedGuiScale; scaleApplied = false; }
+        if (scaleApplied && !keepScale) { mc.gameSettings.guiScale = savedGuiScale; scaleApplied = false; }
+        keepScale = false;
         Keyboard.enableRepeatEvents(false);
         CapeManager.previewOverride = null;
         CapeManager.previewFor = null;
@@ -117,6 +119,11 @@ public class MamadMenu extends GuiScreen {
     }
 
     private void close() { mc.displayGuiScreen(parent); }
+
+    private void openLogin() {
+        keepScale = true;
+        mc.displayGuiScreen(new LoginScreen(this));
+    }
 
     private static float ease(float t) {
         float u = 1f - t;
@@ -802,7 +809,7 @@ public class MamadMenu extends GuiScreen {
         for (int i = 0; i < TABS; i++) {
             if (Ui.inside(mx, my, x0 + 12, y0 + 56 + i * 32, SW - 18, 28)) { setTab(i); return; }
         }
-        if (Ui.inside(mx, my, x0 + 12, y0 + H - 64, SW - 18, 22)) { mc.displayGuiScreen(new LoginScreen(this)); return; }
+        if (Ui.inside(mx, my, x0 + 12, y0 + H - 64, SW - 18, 22)) { openLogin(); return; }
         if (Ui.inside(mx, my, x0 + 12 + (SW - 18) / 2 - 13, y0 + H - 37, 26, 26)) { close(); return; }
 
         // جستجو
@@ -914,7 +921,7 @@ public class MamadMenu extends GuiScreen {
 
     private void clickCapes(int mx, int my) {
         if (!SiteAccount.isLoggedIn()) {
-            if (Ui.inside(mx, my, cx + cw / 2 - 60, cy + ch / 2 - 4, 120, 22)) mc.displayGuiScreen(new LoginScreen(this));
+            if (Ui.inside(mx, my, cx + cw / 2 - 60, cy + ch / 2 - 4, 120, 22)) openLogin();
             return;
         }
         int panelW = 164, gw = cw - panelW - 10;
