@@ -1,14 +1,13 @@
 package ir.mamadcraft.client.gui;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 
 /** ابزارهای مشترک رسم رابط (مستطیل گرد، لوگو) برای صفحه‌های Mamad Client. */
 public final class Ui {
-    public static final int ACCENT = 0xFFFF5A00;
-    public static final int ACCENT_HOVER = 0xFFFF7A2A;
     public static final int PANEL = 0xF01C1C20;
     public static final int FIELD = 0xFF2A2A2E;
     public static final int BTN = 0xCC2A2A2E;
@@ -20,6 +19,32 @@ public final class Ui {
     private static final ResourceLocation LOGO = new ResourceLocation("mamadclient", "textures/logo.png");
 
     private Ui() {}
+
+    /** رنگ رنگین‌کمانی متحرک (RGB). phase (۰ تا ۱) فاز هر المان است تا رنگ‌ها یکدست نباشند. */
+    public static int rgb(float phase) {
+        float h = (((System.currentTimeMillis() % 9000L) / 9000f) + phase) % 1f;
+        if (h < 0f) h += 1f;
+        return 0xFF000000 | (java.awt.Color.HSBtoRGB(h, 0.70f, 1f) & 0xFFFFFF);
+    }
+
+    /** رنگ اصلی کلاینت (جایگزین نارنجی). */
+    public static int accent() { return rgb(0f); }
+
+    public static int accentHover() { return lerp(rgb(0f), 0xFFFFFFFF, 0.28f); }
+
+    /** رنگ اصلی با شفافیت دلخواه (alpha بین ۰ و ۲۵۵). */
+    public static int accentA(int alpha) { return ((alpha & 255) << 24) | (rgb(0f) & 0xFFFFFF); }
+
+    /** متن با موج رنگی RGB حرف‌به‌حرف؛ عرض کشیده‌شده را برمی‌گرداند. */
+    public static int rainbowText(FontRenderer fr, String s, int x, int y, float phase) {
+        int cx = x;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            fr.drawStringWithShadow(String.valueOf(c), cx, y, rgb(phase + i * 0.06f));
+            cx += fr.getCharWidth(c);
+        }
+        return cx - x;
+    }
 
     public static boolean inside(int mx, int my, int x, int y, int w, int h) {
         return mx >= x && mx < x + w && my >= y && my < y + h;

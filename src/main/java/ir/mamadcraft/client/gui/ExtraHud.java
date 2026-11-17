@@ -68,12 +68,12 @@ public class ExtraHud {
 
         if (ModuleManager.REACH.enabled && System.currentTimeMillis() - reachTime < 3000) {
             String s = String.format("Reach: %.2f", reachValue);
-            fr.drawStringWithShadow(s, w / 2 - fr.getStringWidth(s) / 2, h / 2 + 14, BrandingHandler.ORANGE);
+            fr.drawStringWithShadow(s, w / 2 - fr.getStringWidth(s) / 2, h / 2 + 14, Ui.accent());
         }
     }
 
     private void key(FontRenderer fr, int x, int y, int bw, String label, boolean down) {
-        Ui.roundRect(x, y, bw, 20, 5, down ? 0xE0FF7A00 : 0x9A101216);
+        Ui.roundRect(x, y, bw, 20, 5, down ? Ui.accentA(0xE0) : 0x9A101216);
         fr.drawStringWithShadow(label, x + bw / 2 - fr.getStringWidth(label) / 2, y + 6, down ? 0xFFFFFFFF : 0xFFD6D6DC);
     }
 

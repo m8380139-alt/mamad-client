@@ -58,10 +58,10 @@ public class HudHandler {
         int w = pad + labelW + gap + valueW + pad;
         int h = rows.size() * 11 + 7;
         Ui.roundRect(x, y, w, h, 6, 0x9A101216);
-        Ui.roundRect(x, y + 4, 2, h - 8, 1, Ui.ACCENT);
-        int ty = y + 4;
+        Ui.roundRectV(x, y + 4, 2, h - 8, 1, Ui.rgb(0f), Ui.rgb(0.35f));
+        int ty = y + 4, ri = 0;
         for (String[] r : rows) {
-            fr.drawStringWithShadow(r[0], x + pad, ty, BrandingHandler.ORANGE);
+            fr.drawStringWithShadow(r[0], x + pad, ty, Ui.rgb(ri++ * 0.09f));
             fr.drawStringWithShadow(r[1], x + pad + labelW + gap, ty, 0xFFFFFFFF);
             ty += 11;
         }

@@ -13,7 +13,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 /** لوگو و نام کلاینت: صفحهٔ اصلی ماینکرفت + واترمارک داخل بازی. */
 public class BrandingHandler {
     private static final ResourceLocation LOGO = new ResourceLocation("mamadclient", "textures/logo.png");
-    public static final int ORANGE = 0xFFFF7A00;
 
     private static void drawLogo(int x, int y, int size) {
         Minecraft mc = Minecraft.getMinecraft();
@@ -31,7 +30,7 @@ public class BrandingHandler {
         int x = 8, y = 8;
         drawLogo(x, y, size);
         mc.fontRendererObj.drawStringWithShadow("Mamad", x + size + 6, y + 10, 0xFFFFFFFF);
-        mc.fontRendererObj.drawStringWithShadow("Client", x + size + 6, y + 22, ORANGE);
+        Ui.rainbowText(mc.fontRendererObj, "Client", x + size + 6, y + 22, 0f);
         mc.fontRendererObj.drawStringWithShadow("1.8.9", x + size + 6, y + 36, 0xFFAAAAAA);
     }
 
@@ -43,6 +42,6 @@ public class BrandingHandler {
         String t = "Mamad Client";
         Ui.roundRect(4, 4, mc.fontRendererObj.getStringWidth(t) + 28, 16, 8, 0x9A101216);
         drawLogo(7, 6, 12);
-        mc.fontRendererObj.drawStringWithShadow(t, 22, 8, ORANGE);
+        Ui.rainbowText(mc.fontRendererObj, t, 22, 8, 0f);
     }
 }

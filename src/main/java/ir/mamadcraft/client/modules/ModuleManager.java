@@ -53,7 +53,7 @@ public final class ModuleManager {
     /** تنظیمات اصلی بازی قبل از FPS Boost، تا با خاموش‌کردن (حتی بعد از ری‌استارت) برگردند. */
     public static final java.util.Map<String, String> perfOrig = new java.util.LinkedHashMap<String, String>();
 
-    public static int crossColor = 0xFF7A00;
+    public static int crossColor = 0x32D4FF;
     public static String crossShape = "cross";
     public static boolean hideSystem = false, filterSpam = true;
     public static final java.util.Set<String> friends = new java.util.LinkedHashSet<String>();

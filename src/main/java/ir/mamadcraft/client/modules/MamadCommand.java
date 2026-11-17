@@ -64,7 +64,7 @@ public class MamadCommand extends CommandBase {
             if (sub.equals("color")) {
                 String hex = a[2].startsWith("#") ? a[2].substring(1) : a[2];
                 if (!hex.matches("(?i)[0-9a-f]{6}")) {
-                    msg(s, "use a 6-digit hex color like FF7A00");
+                    msg(s, "use a 6-digit hex color like 32D4FF");
                     return;
                 }
                 ModuleManager.crossColor = Integer.parseInt(hex, 16);

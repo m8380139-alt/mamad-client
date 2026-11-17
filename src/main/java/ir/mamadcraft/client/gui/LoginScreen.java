@@ -55,7 +55,7 @@ public class LoginScreen extends GuiScreen {
     private int btnY(int i) { return py + 152 + i * 26 - 4; }
 
     private void drawField(Field f, int x, int y, int w, boolean focused) {
-        if (focused) Ui.roundRectBorder(x, y, w, 20, 7, Ui.FIELD, Ui.ACCENT);
+        if (focused) Ui.roundRectBorder(x, y, w, 20, 7, Ui.FIELD, Ui.accent());
         else Ui.roundRect(x, y, w, 20, 7, Ui.FIELD);
         String shown = f.text;
         if (f.mask && !showPass) {
@@ -102,7 +102,7 @@ public class LoginScreen extends GuiScreen {
 
         // Show password
         int cy = fieldY(1) + 28;
-        Ui.roundRect(px + 16, cy, 10, 10, 3, showPass ? Ui.ACCENT : Ui.FIELD);
+        Ui.roundRect(px + 16, cy, 10, 10, 3, showPass ? Ui.accent() : Ui.FIELD);
         fontRendererObj.drawString("Show password", px + 32, cy + 1, 0xFFCCCCCC);
 
         if (!msg.isEmpty()) {
@@ -110,7 +110,7 @@ public class LoginScreen extends GuiScreen {
         }
 
         int bx = px + 16, bw = pw - 32;
-        drawButton(busy ? "Signing in..." : "Login", bx, btnY(0), bw, Ui.ACCENT, Ui.ACCENT_HOVER, mx, my, 0xFFFFFFFF);
+        drawButton(busy ? "Signing in..." : "Login", bx, btnY(0), bw, Ui.accent(), Ui.accentHover(), mx, my, 0xFFFFFFFF);
         int i = 1;
         if (SiteAccount.isLoggedIn()) {
             drawButton("Sign out", bx, btnY(i++), bw, Ui.BTN, Ui.BTN_HOVER, mx, my, 0xFFFFFFFF);

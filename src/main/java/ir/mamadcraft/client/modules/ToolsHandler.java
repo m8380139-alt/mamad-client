@@ -19,7 +19,6 @@ public class ToolsHandler {
     public static KeyBinding zoomKey;
 
     private static final long START = System.currentTimeMillis();
-    private static final int ORANGE = 0xFFFF7A00;
     private final SimpleDateFormat clockFormat = new SimpleDateFormat("HH:mm");
 
     private int combo;
@@ -85,7 +84,7 @@ public class ToolsHandler {
     private int line(FontRenderer fr, int w, int y, String label, String value) {
         String full = label + ": " + value;
         int x = w / 2 - fr.getStringWidth(full) / 2;
-        fr.drawStringWithShadow(label + ": ", x, y, ORANGE);
+        fr.drawStringWithShadow(label + ": ", x, y, ir.mamadcraft.client.gui.Ui.accent());
         fr.drawStringWithShadow(value, x + fr.getStringWidth(label + ": "), y, 0xFFFFFFFF);
         return y + 11;
     }
