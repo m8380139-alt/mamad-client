@@ -19,6 +19,7 @@ public final class ModuleManager {
     }
 
     public static final List<Module> MODULES = new ArrayList<Module>();
+    public static final Module GAMING = add("Gaming Mode", false);
     public static final Module FPS = add("FPS", true);
     public static final Module CPS = add("CPS", true);
     public static final Module PING = add("Ping", true);
@@ -52,6 +53,41 @@ public final class ModuleManager {
 
     /** تنظیمات اصلی بازی قبل از FPS Boost، تا با خاموش‌کردن (حتی بعد از ری‌استارت) برگردند. */
     public static final java.util.Map<String, String> perfOrig = new java.util.LinkedHashMap<String, String>();
+
+    /** حالت قبلی ماژول‌ها قبل از Gaming Mode، تا با خاموش‌کردنش (حتی بعد از ری‌استارت) برگردند. */
+    public static final java.util.Map<String, Boolean> gamingPrev = new java.util.LinkedHashMap<String, Boolean>();
+
+    /** ماژول‌هایی که Gaming Mode روشن می‌کند: بخش FPS (Performance) + کیبورد. */
+    private static Module[] gamingSet() {
+        return new Module[]{FPS, MEMORY, BOOST, CULLING, KEYSTROKES};
+    }
+
+    /** روشن/خاموش‌کردن یک ماژول؛ برای Gaming Mode ماژول‌های بالا هم روشن می‌شوند یا برمی‌گردند. */
+    public static void toggle(Module m) {
+        m.enabled = !m.enabled;
+        if (m != GAMING) return;
+        if (m.enabled) {
+            gamingPrev.clear();
+            for (Module g : gamingSet()) { gamingPrev.put(g.name, g.enabled); g.enabled = true; }
+        } else {
+            for (Module g : gamingSet()) {
+                Boolean was = gamingPrev.get(g.name);
+                if (was != null) g.enabled = was;
+            }
+            gamingPrev.clear();
+        }
+    }
+
+    /** رنگ RGB متحرک (offset برای فاصله‌انداختن رنگ خطوط). */
+    public static int rgb(int offset) {
+        float hue = ((System.currentTimeMillis() % 4000L) / 4000f + Math.abs(offset) / 360f) % 1f;
+        return java.awt.Color.HSBtoRGB(hue, 0.85f, 1f);
+    }
+
+    /** با Gaming Mode رنگ RGB متحرک، وگرنه رنگ عادی. */
+    public static int hud(int base, int offset) {
+        return GAMING.enabled ? rgb(offset) : base;
+    }
 
     public static int crossColor = 0xFF7A00;
     public static String crossShape = "cross";
@@ -113,6 +149,10 @@ public final class ModuleManager {
             for (String k : p.stringPropertyNames()) {
                 if (k.startsWith("perf.orig.")) perfOrig.put(k.substring("perf.orig.".length()), p.getProperty(k));
             }
+            gamingPrev.clear();
+            for (String k : p.stringPropertyNames()) {
+                if (k.startsWith("gaming.prev.")) gamingPrev.put(k.substring("gaming.prev.".length()), Boolean.parseBoolean(p.getProperty(k)));
+            }
             loadSet(p.getProperty("friends"), friends);
             loadSet(p.getProperty("enemies"), enemies);
             // Keep each name in only one list, even if an old or edited config overlaps them.
@@ -131,6 +171,7 @@ public final class ModuleManager {
             p.setProperty("chat.hidesystem", String.valueOf(hideSystem));
             p.setProperty("chat.spam", String.valueOf(filterSpam));
             for (java.util.Map.Entry<String, String> en : perfOrig.entrySet()) p.setProperty("perf.orig." + en.getKey(), en.getValue());
+            for (java.util.Map.Entry<String, Boolean> en : gamingPrev.entrySet()) p.setProperty("gaming.prev." + en.getKey(), String.valueOf(en.getValue()));
             p.setProperty("friends", join(friends));
             p.setProperty("enemies", join(enemies));
             p.store(out, "Mamad Client");

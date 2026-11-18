@@ -85,8 +85,8 @@ public class ToolsHandler {
     private int line(FontRenderer fr, int w, int y, String label, String value) {
         String full = label + ": " + value;
         int x = w / 2 - fr.getStringWidth(full) / 2;
-        fr.drawStringWithShadow(label + ": ", x, y, ORANGE);
-        fr.drawStringWithShadow(value, x + fr.getStringWidth(label + ": "), y, 0xFFFFFFFF);
+        fr.drawStringWithShadow(label + ": ", x, y, ModuleManager.hud(ORANGE, y * 3));
+        fr.drawStringWithShadow(value, x + fr.getStringWidth(label + ": "), y, ModuleManager.hud(0xFFFFFFFF, y * 3 + 25));
         return y + 11;
     }
 

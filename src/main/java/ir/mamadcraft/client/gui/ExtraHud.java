@@ -73,8 +73,10 @@ public class ExtraHud {
     }
 
     private void key(FontRenderer fr, int x, int y, int bw, String label, boolean down) {
-        Gui.drawRect(x, y, x + bw, y + 20, down ? 0xB0FF7A00 : 0x80000000);
-        fr.drawStringWithShadow(label, x + bw / 2 - fr.getStringWidth(label) / 2, y + 6, 0xFFFFFFFF);
+        int rgb = ModuleManager.rgb(x + y * 2);
+        int pressed = ModuleManager.GAMING.enabled ? (0xB0000000 | (rgb & 0xFFFFFF)) : 0xB0FF7A00;
+        Gui.drawRect(x, y, x + bw, y + 20, down ? pressed : 0x80000000);
+        fr.drawStringWithShadow(label, x + bw / 2 - fr.getStringWidth(label) / 2, y + 6, ModuleManager.hud(0xFFFFFFFF, x + y * 2));
     }
 
     private void item(Minecraft mc, FontRenderer fr, ItemStack st, int w, int y) {

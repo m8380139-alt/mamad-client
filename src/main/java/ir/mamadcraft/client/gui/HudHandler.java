@@ -26,8 +26,8 @@ public class HudHandler {
     }
 
     private void line(Minecraft mc, int y, String label, String value) {
-        mc.fontRendererObj.drawStringWithShadow(label + ": ", 4, y, BrandingHandler.ORANGE);
-        mc.fontRendererObj.drawStringWithShadow(value, 4 + mc.fontRendererObj.getStringWidth(label + ": "), y, 0xFFFFFFFF);
+        mc.fontRendererObj.drawStringWithShadow(label + ": ", 4, y, ModuleManager.hud(BrandingHandler.ORANGE, y * 3));
+        mc.fontRendererObj.drawStringWithShadow(value, 4 + mc.fontRendererObj.getStringWidth(label + ": "), y, ModuleManager.hud(0xFFFFFFFF, y * 3 + 25));
     }
 
     @SubscribeEvent

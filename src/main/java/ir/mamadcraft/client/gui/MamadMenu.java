@@ -261,7 +261,7 @@ public class MamadMenu extends GuiScreen {
                 return "Visual";
             case "Toggle Sprint": case "Toggle Sneak": case "Chat Tweaks":
                 return "Utility";
-            case "FPS Boost": case "Entity Culling":
+            case "FPS Boost": case "Entity Culling": case "Gaming Mode":
                 return "Perf";
             default:
                 return "HUD";
@@ -303,6 +303,7 @@ public class MamadMenu extends GuiScreen {
             case "Hot Bar": return "Show or hide the hotbar.";
             case "Tab": return "Show or hide the player list.";
             case "Watermark": return "Shows the Mamad Client logo on screen.";
+            case "Gaming Mode": return "Turns on FPS, Memory, FPS Boost, Entity Culling and Keystrokes with animated RGB colors.";
             case "FPS Boost": return "Lighter graphics for more FPS. Turn it off to restore your settings.";
             case "Entity Culling": return "Skips drawing far away mobs (players are always drawn).";
             default: return "";
@@ -833,7 +834,7 @@ public class MamadMenu extends GuiScreen {
         if (i < 0) return;
         ModuleManager.Module m = mods.get(i);
         selMod = m.name;
-        m.enabled = !m.enabled;
+        ModuleManager.toggle(m);
         ModuleManager.save();
     }
 
@@ -854,7 +855,7 @@ public class MamadMenu extends GuiScreen {
         int cols = toolCols();
         int bx = cardX(i, cols), by = cardY(i, cols), cwid = cardW(cols);
         if (Ui.inside(mx, my, bx + cwid - 30, by + 3, 28, 18)) {   // روی خود کلید: روشن/خاموش
-            m.enabled = !m.enabled;
+            ModuleManager.toggle(m);
             ModuleManager.save();
         }
         selMod = m.name;
@@ -864,7 +865,7 @@ public class MamadMenu extends GuiScreen {
     private boolean clickModulePanel(ModuleManager.Module m, int mx, int my, int px, int pw) {
         int bx = px + 12, bw = pw - 24, by = cy + ch - 32;
         if (Ui.inside(mx, my, bx, by, bw, 22)) {
-            m.enabled = !m.enabled;
+            ModuleManager.toggle(m);
             ModuleManager.save();
             return true;
         }
