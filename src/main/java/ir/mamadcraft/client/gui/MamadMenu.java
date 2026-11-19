@@ -38,7 +38,7 @@ public class MamadMenu extends GuiScreen {
     private static final int TABS = 3;
 
     private static final String[] CATS = {"All", "PvP", "HUD", "Visual", "Utility", "Perf"};
-    private static final int[] SWATCHES = {0xFF7A00, 0xFF3B3B, 0xFFD60A, 0x4CD964, 0x32D4FF, 0x5E7CFF, 0xB26BFF, 0xFFFFFF};
+    private static final int[] SWATCHES = {0x8B5CF6, 0xFF3B3B, 0xFFD60A, 0x4CD964, 0x32D4FF, 0x5E7CFF, 0xB26BFF, 0xFFFFFF};
     private static final String[] SHAPES = {"cross", "dot", "circle"};
     private static final String[] SHAPE_LABELS = {"Cross", "Dot", "Circle"};
 
@@ -325,7 +325,7 @@ public class MamadMenu extends GuiScreen {
         Ui.roundRect(x0 - 1, y0 - 1, W + 2, H + 2, 15, 0x38FFFFFF);
         Ui.roundRect(x0, y0, W, H, 14, 0xC4101216);
         drawGradientRect(x0 + 14, y0 + 1, x0 + W - 14, y0 + H / 3, 0x18FFFFFF, 0x00FFFFFF);
-        drawGradientRect(x0 + SW + 8, y0 + 1, x0 + W - 14, y0 + 34, 0x16FF5A00, 0x00FF5A00);
+        drawGradientRect(x0 + SW + 8, y0 + 1, x0 + W - 14, y0 + 34, 0x168B5CF6, 0x008B5CF6);
         Ui.roundRect(x0 + 6, y0 + 6, SW - 6, H - 12, 10, 0x44000000);
 
         drawSidebar(mx, my);
@@ -349,7 +349,7 @@ public class MamadMenu extends GuiScreen {
 
         // نشانگر متحرک تب انتخاب‌شده
         int ay = y0 + 56 + (int) tabY;
-        Ui.roundRect(nx, ay, nw, 28, 10, 0x55FF5A00);
+        Ui.roundRect(nx, ay, nw, 28, 10, 0x558B5CF6);
         Ui.roundRect(nx, ay + 7, 3, 14, 1, Ui.ACCENT);
 
         for (int i = 0; i < TABS; i++) {
@@ -370,7 +370,7 @@ public class MamadMenu extends GuiScreen {
         Ui.roundRect(ax, y0 + H - 64, aw, 22, 11, ah ? 0x44FFFFFF : 0x30FFFFFF);
         Ui.logo(ax + 5, y0 + H - 61, 16);
         fontRendererObj.drawString(fontRendererObj.trimStringToWidth(acct, aw - 30), ax + 25, y0 + H - 56,
-                SiteAccount.isLoggedIn() ? 0xFFFFFFFF : 0xFFFFB27A);
+                SiteAccount.isLoggedIn() ? 0xFFFFFFFF : 0xFFC4B5FD);
         int px0 = ax + aw / 2 - 13, py0 = y0 + H - 37;
         boolean ph = Ui.inside(mx, my, px0, py0, 26, 26);
         Ui.roundRect(px0, py0, 26, 26, 13, ph ? 0xFFEF5350 : Ui.RED);
@@ -497,13 +497,13 @@ public class MamadMenu extends GuiScreen {
             on[idx] += ((m.enabled ? 1f : 0f) - on[idx]) * 0.25f;
 
             int fill = Ui.lerp(0x28FFFFFF, 0x44FFFFFF, hover[idx]);
-            if (m.name.equals(selMod)) Ui.roundRectBorder(bx, by, cwid, CARD_H, 12, 0x40FF5A00, Ui.ACCENT);
-            else if (m.enabled) Ui.roundRectBorder(bx, by, cwid, CARD_H, 12, fill, 0x77FF5A00);
+            if (m.name.equals(selMod)) Ui.roundRectBorder(bx, by, cwid, CARD_H, 12, 0x408B5CF6, Ui.ACCENT);
+            else if (m.enabled) Ui.roundRectBorder(bx, by, cwid, CARD_H, 12, fill, 0x778B5CF6);
             else Ui.roundRect(bx, by, cwid, CARD_H, 12, fill);
 
             int tile = 30, tx = bx + (cwid - tile) / 2, ty = by + 10;
             Ui.glassTile(tx, ty, tile);
-            Ui.roundRect(tx, ty, tile, tile, 8, Ui.lerp(0x00FF5A00, 0x44FF5A00, on[idx]));
+            Ui.roundRect(tx, ty, tile, tile, 8, Ui.lerp(0x008B5CF6, 0x448B5CF6, on[idx]));
             if (!Icons.draw(m.name, tx + 6, ty + 6, 18, 0xFFF1F3F6)) {
                 centered(m.name.substring(0, 1).toUpperCase(Locale.ROOT), tx + tile / 2, ty + 11, 0xFFF1F3F6);
             }
@@ -541,7 +541,7 @@ public class MamadMenu extends GuiScreen {
         int mid = px + pw / 2;
         int tile = 38, tx = mid - tile / 2, ty = cy + 12;
         Ui.glassTile(tx, ty, tile);
-        if (m.enabled) Ui.roundRect(tx, ty, tile, tile, 8, 0x44FF5A00);
+        if (m.enabled) Ui.roundRect(tx, ty, tile, tile, 8, 0x448B5CF6);
         if (!Icons.draw(m.name, tx + 7, ty + 7, 24, 0xFFF1F3F6)) {
             centered(m.name.substring(0, 1).toUpperCase(Locale.ROOT), mid, ty + 15, 0xFFF1F3F6);
         }
@@ -643,7 +643,7 @@ public class MamadMenu extends GuiScreen {
             if (by + PROF_H < cy || by > cy + ch) continue;
             boolean active = profileActive(i);
             boolean hov = Ui.inside(mx, my, cx, by, cw, PROF_H) && Ui.inside(mx, my, cx, cy, cw, ch);
-            if (active) Ui.roundRectBorder(cx, by, cw, PROF_H, 12, 0x30FF5A00, Ui.ACCENT);
+            if (active) Ui.roundRectBorder(cx, by, cw, PROF_H, 12, 0x308B5CF6, Ui.ACCENT);
             else Ui.roundRect(cx, by, cw, PROF_H, 12, hov ? 0x40FFFFFF : 0x28FFFFFF);
 
             int tile = 30, tx = cx + 10, ty = by + (PROF_H - tile) / 2;
@@ -706,7 +706,7 @@ public class MamadMenu extends GuiScreen {
             if (by + chei < cy || by > cy + ch) continue;
             boolean isSel = sel != null && c.id.equals(sel.id);
             boolean hov = Ui.inside(mx, my, bx, by, cwid, chei) && Ui.inside(mx, my, cx, cy, gw, ch);
-            if (isSel) Ui.roundRectBorder(bx, by, cwid, chei, 12, 0x40FF5A00, Ui.ACCENT);
+            if (isSel) Ui.roundRectBorder(bx, by, cwid, chei, 12, 0x408B5CF6, Ui.ACCENT);
             else Ui.roundRect(bx, by, cwid, chei, 12, hov ? 0x40FFFFFF : 0x28FFFFFF);
 
             ImageCache.Img img = ImageCache.get(c.previewUrl);

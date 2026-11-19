@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 /** لوگو و نام کلاینت: صفحهٔ اصلی ماینکرفت + واترمارک داخل بازی. */
 public class BrandingHandler {
     private static final ResourceLocation LOGO = new ResourceLocation("mamadclient", "textures/logo.png");
-    public static final int ORANGE = 0xFFFF7A00;
+    public static final int ORANGE = 0xFF8B5CF6;
 
     private static void drawLogo(int x, int y, int size) {
         Minecraft mc = Minecraft.getMinecraft();

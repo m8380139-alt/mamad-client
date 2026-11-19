@@ -87,7 +87,7 @@ public class MamadMainMenu extends GuiScreen {
         boolean ah = Ui.inside(mx, my, acctX, acctY, acctW, 20);
         Ui.roundRect(acctX, acctY, acctW, 20, 10, ah ? 0xE02A2A30 : 0xCC141418);
         Ui.logo(acctX + 4, acctY + 3, 14);
-        fontRendererObj.drawStringWithShadow(acct, acctX + 22, acctY + 6, SiteAccount.isLoggedIn() ? 0xFFFFFFFF : 0xFFFFB27A);
+        fontRendererObj.drawStringWithShadow(acct, acctX + 22, acctY + 6, SiteAccount.isLoggedIn() ? 0xFFFFFFFF : 0xFFC4B5FD);
 
         int ls = 72;
         Ui.logo(width / 2 - ls / 2, height / 2 - ls - 12, ls);

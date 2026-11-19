@@ -2,13 +2,18 @@ package ir.mamadcraft.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 
 /** ابزارهای مشترک رسم رابط (مستطیل گرد، لوگو) برای صفحه‌های Mamad Client. */
 public final class Ui {
-    public static final int ACCENT = 0xFFFF5A00;
-    public static final int ACCENT_HOVER = 0xFFFF7A2A;
+    public static final int ACCENT = 0xFF8B5CF6;
+    public static final int ACCENT_HOVER = 0xFFA78BFA;
     public static final int PANEL = 0xF01C1C20;
     public static final int FIELD = 0xFF2A2A2E;
     public static final int BTN = 0xCC2A2A2E;
@@ -25,19 +30,9 @@ public final class Ui {
         return mx >= x && mx < x + w && my >= y && my < y + h;
     }
 
-    /** مستطیل با گوشه‌های گرد (ردیف‌به‌ردیف، بدون تکسچر). */
+    /** مستطیل با گوشه‌های گرد؛ در رزولوشن واقعی صفحه با لبهٔ صاف (HD). */
     public static void roundRect(int x, int y, int w, int h, int r, int color) {
-        r = Math.min(r, Math.min(w, h) / 2);
-        for (int dy = 0; dy < h; dy++) {
-            int inset = 0;
-            if (dy < r) {
-                inset = (int) Math.round(r - Math.sqrt((double) r * r - (double) (r - dy) * (r - dy)));
-            } else if (dy >= h - r) {
-                int d = h - 1 - dy;
-                inset = (int) Math.round(r - Math.sqrt((double) r * r - (double) (r - d) * (r - d)));
-            }
-            Gui.drawRect(x + inset, y + dy, x + w - inset, y + dy + 1, color);
-        }
+        roundGrad(x, y, w, h, r, color, color);
     }
 
     /** مستطیل گرد با حاشیهٔ رنگی (۱ پیکسل). */
@@ -58,17 +53,51 @@ public final class Ui {
 
     /** مستطیل گرد با شیب رنگ از بالا به پایین. */
     public static void roundRectV(int x, int y, int w, int h, int r, int top, int bottom) {
-        r = Math.min(r, Math.min(w, h) / 2);
-        for (int dy = 0; dy < h; dy++) {
-            int inset = 0;
-            if (dy < r) {
-                inset = (int) Math.round(r - Math.sqrt((double) r * r - (double) (r - dy) * (r - dy)));
-            } else if (dy >= h - r) {
-                int d = h - 1 - dy;
-                inset = (int) Math.round(r - Math.sqrt((double) r * r - (double) (r - d) * (r - d)));
-            }
-            Gui.drawRect(x + inset, y + dy, x + w - inset, y + dy + 1, lerp(top, bottom, dy / (float) Math.max(1, h - 1)));
+        roundGrad(x, y, w, h, r, top, bottom);
+    }
+
+    /** رسم در پیکسل‌های واقعی صفحه (نه پیکسل‌های بزرگ GUI) با لبهٔ نرم؛ همه در یک batch. */
+    private static void roundGrad(int x, int y, int w, int h, int r, int top, int bottom) {
+        if (w <= 0 || h <= 0) return;
+        Minecraft mc = Minecraft.getMinecraft();
+        int sf = new ScaledResolution(mc).getScaleFactor();
+        float X = x * sf, Y = y * sf, W = w * sf, H = h * sf;
+        float R = Math.min(r * sf, Math.min(W, H) / 2f);
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(1f / sf, 1f / sf, 1f);
+        GlStateManager.enableBlend();
+        GlStateManager.disableTexture2D();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        Tessellator t = Tessellator.getInstance();
+        WorldRenderer wr = t.getWorldRenderer();
+        wr.begin(7, DefaultVertexFormats.POSITION_COLOR);
+        int rows = (int) H;
+        for (int dy = 0; dy < rows; dy++) {
+            float yc = dy + 0.5f, inset = 0f;
+            if (yc < R) { float d = R - yc; inset = R - (float) Math.sqrt(R * R - d * d); }
+            else if (yc > H - R) { float d = yc - (H - R); inset = R - (float) Math.sqrt(R * R - d * d); }
+            int fi = (int) Math.floor(inset);
+            float cov = 1f - (inset - fi);
+            int col = lerp(top, bottom, dy / (float) Math.max(1, rows - 1));
+            float y0 = Y + dy, y1 = y0 + 1;
+            if (fi + 1 >= W - fi - 1) { quad(wr, X + fi, y0, X + W - fi, y1, col, cov); continue; }
+            quad(wr, X + fi + 1, y0, X + W - fi - 1, y1, col, 1f);
+            quad(wr, X + fi, y0, X + fi + 1, y1, col, cov);
+            quad(wr, X + W - fi - 1, y0, X + W - fi, y1, col, cov);
         }
+        t.draw();
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableBlend();
+        GlStateManager.popMatrix();
+    }
+
+    private static void quad(WorldRenderer wr, float x0, float y0, float x1, float y1, int c, float cov) {
+        int a = Math.round(((c >>> 24) & 255) * cov);
+        int rr = (c >> 16) & 255, g = (c >> 8) & 255, b = c & 255;
+        wr.pos(x0, y1, 0).color(rr, g, b, a).endVertex();
+        wr.pos(x1, y1, 0).color(rr, g, b, a).endVertex();
+        wr.pos(x1, y0, 0).color(rr, g, b, a).endVertex();
+        wr.pos(x0, y0, 0).color(rr, g, b, a).endVertex();
     }
 
     /** کاشی شیشه‌ای نقره‌ای زیر آیکون ابزارها. */
@@ -80,6 +109,8 @@ public final class Ui {
 
     public static void logo(int x, int y, int size) {
         Minecraft.getMinecraft().getTextureManager().bindTexture(LOGO);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         GlStateManager.enableBlend();
         GlStateManager.color(1f, 1f, 1f, 1f);
         Gui.drawModalRectWithCustomSizedTexture(x, y, 0, 0, size, size, size, size);

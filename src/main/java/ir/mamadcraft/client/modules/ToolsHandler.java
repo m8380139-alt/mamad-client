@@ -19,7 +19,7 @@ public class ToolsHandler {
     public static KeyBinding zoomKey;
 
     private static final long START = System.currentTimeMillis();
-    private static final int ORANGE = 0xFFFF7A00;
+    private static final int ORANGE = 0xFF8B5CF6;
     private final SimpleDateFormat clockFormat = new SimpleDateFormat("HH:mm");
 
     private int combo;

@@ -89,7 +89,7 @@ public final class ModuleManager {
         return GAMING.enabled ? rgb(offset) : base;
     }
 
-    public static int crossColor = 0xFF7A00;
+    public static int crossColor = 0x8B5CF6;
     public static String crossShape = "cross";
     public static boolean hideSystem = false, filterSpam = true;
     public static final java.util.Set<String> friends = new java.util.LinkedHashSet<String>();

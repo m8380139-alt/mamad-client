@@ -74,8 +74,8 @@ public class ExtraHud {
 
     private void key(FontRenderer fr, int x, int y, int bw, String label, boolean down) {
         int rgb = ModuleManager.rgb(x + y * 2);
-        int pressed = ModuleManager.GAMING.enabled ? (0xB0000000 | (rgb & 0xFFFFFF)) : 0xB0FF7A00;
-        Gui.drawRect(x, y, x + bw, y + 20, down ? pressed : 0x80000000);
+        int pressed = ModuleManager.GAMING.enabled ? (0xB0000000 | (rgb & 0xFFFFFF)) : 0xB08B5CF6;
+        Ui.roundRect(x, y, bw, 20, 6, down ? pressed : 0x80000000);
         fr.drawStringWithShadow(label, x + bw / 2 - fr.getStringWidth(label) / 2, y + 6, ModuleManager.hud(0xFFFFFFFF, x + y * 2));
     }
 
