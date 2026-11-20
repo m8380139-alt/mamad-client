@@ -26,8 +26,8 @@ public class HudHandler {
     }
 
     private void line(Minecraft mc, int y, String label, String value) {
-        mc.fontRendererObj.drawStringWithShadow(label + ": ", 4, y, ModuleManager.hud(BrandingHandler.ORANGE, y * 3));
-        mc.fontRendererObj.drawStringWithShadow(value, 4 + mc.fontRendererObj.getStringWidth(label + ": "), y, ModuleManager.hud(0xFFFFFFFF, y * 3 + 25));
+        Ui.statPill(mc.fontRendererObj, 4, y, label, value,
+                ModuleManager.hud(BrandingHandler.ORANGE, y * 3), ModuleManager.hud(0xFFFFFFFF, y * 3 + 25));
     }
 
     @SubscribeEvent
@@ -36,15 +36,15 @@ public class HudHandler {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.gameSettings.showDebugInfo || mc.thePlayer == null) return;
         int y = 24;
-        if (ModuleManager.FPS.enabled) { line(mc, y, "FPS", String.valueOf(Minecraft.getDebugFPS())); y += 11; }
-        if (ModuleManager.CPS.enabled) { line(mc, y, "CPS", String.valueOf(cps())); y += 11; }
+        if (ModuleManager.FPS.enabled) { line(mc, y, "FPS", String.valueOf(Minecraft.getDebugFPS())); y += 17; }
+        if (ModuleManager.CPS.enabled) { line(mc, y, "CPS", String.valueOf(cps())); y += 17; }
         if (ModuleManager.PING.enabled) {
             int ping = 0;
             if (mc.getNetHandler() != null) {
                 NetworkPlayerInfo info = mc.getNetHandler().getPlayerInfo(mc.thePlayer.getUniqueID());
                 if (info != null) ping = info.getResponseTime();
             }
-            line(mc, y, "Ping", ping + " ms"); y += 11;
+            line(mc, y, "Ping", ping + " ms"); y += 17;
         }
         if (ModuleManager.COORDS.enabled) {
             line(mc, y, "XYZ", (int) mc.thePlayer.posX + " " + (int) mc.thePlayer.posY + " " + (int) mc.thePlayer.posZ);
