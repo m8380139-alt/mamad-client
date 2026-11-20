@@ -100,6 +100,23 @@ public final class Ui {
         wr.pos(x0, y0, 0).color(rr, g, b, a).endVertex();
     }
 
+    /** پنل شیشه‌ای مدرن برای HUD: زمینهٔ تیره نیمه‌شفاف + حاشیهٔ ظریف + نوار رنگی سمت چپ. */
+    public static void hudPanel(int x, int y, int w, int h, int accent) {
+        roundRect(x - 1, y - 1, w + 2, h + 2, 6, 0x22FFFFFF);
+        roundRect(x, y, w, h, 5, 0xA0101216);
+        roundRect(x + 3, y + 3, 2, h - 6, 1, accent);
+    }
+
+    /** یک خط «برچسب: مقدار» داخل پنل گرد؛ عرض پنل را برمی‌گرداند. */
+    public static int statPill(net.minecraft.client.gui.FontRenderer fr, int x, int y, String label, String value, int labelColor, int valueColor) {
+        String l = label + "  ";
+        int w = fr.getStringWidth(l) + fr.getStringWidth(value) + 14;
+        hudPanel(x, y, w, 14, labelColor);
+        fr.drawStringWithShadow(l, x + 9, y + 3, labelColor);
+        fr.drawStringWithShadow(value, x + 9 + fr.getStringWidth(l), y + 3, valueColor);
+        return w;
+    }
+
     /** کاشی شیشه‌ای نقره‌ای زیر آیکون ابزارها. */
     public static void glassTile(int x, int y, int s) {
         roundRect(x - 1, y - 1, s + 2, s + 2, 9, 0x55FFFFFF);

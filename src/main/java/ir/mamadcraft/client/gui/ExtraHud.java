@@ -41,41 +41,59 @@ public class ExtraHud {
         FontRenderer fr = mc.fontRendererObj;
 
         if (ModuleManager.KEYSTROKES.enabled) {
-            key(fr, 26, 84, 20, "W", mc.gameSettings.keyBindForward.isKeyDown());
-            key(fr, 4, 106, 20, "A", mc.gameSettings.keyBindLeft.isKeyDown());
-            key(fr, 26, 106, 20, "S", mc.gameSettings.keyBindBack.isKeyDown());
-            key(fr, 48, 106, 20, "D", mc.gameSettings.keyBindRight.isKeyDown());
-            key(fr, 4, 128, 31, "LMB", mc.gameSettings.keyBindAttack.isKeyDown());
-            key(fr, 37, 128, 31, "RMB", mc.gameSettings.keyBindUseItem.isKeyDown());
+            key(fr, 26, 100, 20, "W", mc.gameSettings.keyBindForward.isKeyDown());
+            key(fr, 4, 122, 20, "A", mc.gameSettings.keyBindLeft.isKeyDown());
+            key(fr, 26, 122, 20, "S", mc.gameSettings.keyBindBack.isKeyDown());
+            key(fr, 48, 122, 20, "D", mc.gameSettings.keyBindRight.isKeyDown());
+            key(fr, 4, 144, 31, "LMB", mc.gameSettings.keyBindAttack.isKeyDown());
+            key(fr, 37, 144, 31, "RMB", mc.gameSettings.keyBindUseItem.isKeyDown());
         }
 
         if (ModuleManager.POTIONS.enabled) {
             int y = 4;
             for (Object o : mc.thePlayer.getActivePotionEffects()) {
                 PotionEffect pe = (PotionEffect) o;
-                String s = I18n.format(pe.getEffectName()) + (pe.getAmplifier() > 0 ? " " + (pe.getAmplifier() + 1) : "")
-                        + " " + Potion.getDurationString(pe);
-                fr.drawStringWithShadow(s, w - fr.getStringWidth(s) - 4, y, 0xFFFFFFFF);
-                y += 11;
+                String name = I18n.format(pe.getEffectName()) + (pe.getAmplifier() > 0 ? " " + (pe.getAmplifier() + 1) : "");
+                String time = Potion.getDurationString(pe);
+                int tc = pe.getDuration() < 200 ? 0xFFFF5555 : 0xFFFFFFFF;   // کمتر از ۱۰ ثانیه: قرمز
+                int pw = fr.getStringWidth(name + "  ") + fr.getStringWidth(time) + 14;
+                int px = w - pw - 4;
+                Ui.hudPanel(px, y, pw, 14, tc == 0xFFFFFFFF ? BrandingHandler.ORANGE : tc);
+                fr.drawStringWithShadow(name + "  ", px + 9, y + 3, 0xFFDDDDDD);
+                fr.drawStringWithShadow(time, px + 9 + fr.getStringWidth(name + "  "), y + 3, tc);
+                y += 17;
             }
         }
 
         if (ModuleManager.ARMOR.enabled) {
             int y = h / 2 - 50;
+            Ui.hudPanel(w - 64, y - 3, 62, 5 * 18 + 4, BrandingHandler.ORANGE);
             for (int i = 3; i >= 0; i--) { item(mc, fr, mc.thePlayer.inventory.armorInventory[i], w, y); y += 18; }
             item(mc, fr, mc.thePlayer.getHeldItem(), w, y);
         }
 
         if (ModuleManager.REACH.enabled && System.currentTimeMillis() - reachTime < 3000) {
-            String s = String.format("Reach: %.2f", reachValue);
-            fr.drawStringWithShadow(s, w / 2 - fr.getStringWidth(s) / 2, h / 2 + 14, BrandingHandler.ORANGE);
+            String s = String.format("%.2f", reachValue);
+            Ui.statPill(fr, w / 2 - (fr.getStringWidth("Reach  " + s) + 14) / 2, h / 2 + 14, "Reach", s,
+                    BrandingHandler.ORANGE, 0xFFFFFFFF);
         }
     }
 
+    private final java.util.Map<String, Float> pressAnim = new java.util.HashMap<String, Float>();
+
     private void key(FontRenderer fr, int x, int y, int bw, String label, boolean down) {
+        // انیمیشن نرم فشردن/رها کردن کلید
+        Float prev = pressAnim.get(label);
+        float p = prev == null ? 0f : prev;
+        p += ((down ? 1f : 0f) - p) * 0.35f;
+        if (Math.abs((down ? 1f : 0f) - p) < 0.01f) p = down ? 1f : 0f;
+        pressAnim.put(label, p);
+
         int rgb = ModuleManager.rgb(x + y * 2);
-        int pressed = ModuleManager.GAMING.enabled ? (0xB0000000 | (rgb & 0xFFFFFF)) : 0xB08B5CF6;
-        Ui.roundRect(x, y, bw, 20, 6, down ? pressed : 0x80000000);
+        int accent = ModuleManager.GAMING.enabled ? (0xFF000000 | (rgb & 0xFFFFFF)) : 0xFF8B5CF6;
+        int fill = Ui.lerp(0x90101216, (accent & 0xFFFFFF) | 0xC0000000, p);
+        int border = Ui.lerp(0x30FFFFFF, accent, p);
+        Ui.roundRectBorder(x, y, bw, 20, 6, fill, border);
         fr.drawStringWithShadow(label, x + bw / 2 - fr.getStringWidth(label) / 2, y + 6, ModuleManager.hud(0xFFFFFFFF, x + y * 2));
     }
 
