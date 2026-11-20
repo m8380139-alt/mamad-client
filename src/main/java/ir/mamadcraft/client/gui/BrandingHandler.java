@@ -41,8 +41,10 @@ public class BrandingHandler {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.gameSettings.showDebugInfo || !ir.mamadcraft.client.modules.ModuleManager.WATERMARK.enabled) return;
         int w = mc.fontRendererObj.getStringWidth("Mamad Client") + 30;
+        HudLayout.begin(HudLayout.MARK);
         Ui.hudPanel(4, 4, w, 16, ORANGE);
         drawLogo(11, 5, 14);
         mc.fontRendererObj.drawStringWithShadow("Mamad Client", 29, 9, 0xFFFFFFFF);
+        HudLayout.end(HudLayout.MARK, 4, 4, w, 16);
     }
 }

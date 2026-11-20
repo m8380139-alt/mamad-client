@@ -41,15 +41,19 @@ public class ExtraHud {
         FontRenderer fr = mc.fontRendererObj;
 
         if (ModuleManager.KEYSTROKES.enabled) {
+            HudLayout.begin(HudLayout.KEYS);
             key(fr, 26, 100, 20, "W", mc.gameSettings.keyBindForward.isKeyDown());
             key(fr, 4, 122, 20, "A", mc.gameSettings.keyBindLeft.isKeyDown());
             key(fr, 26, 122, 20, "S", mc.gameSettings.keyBindBack.isKeyDown());
             key(fr, 48, 122, 20, "D", mc.gameSettings.keyBindRight.isKeyDown());
             key(fr, 4, 144, 31, "LMB", mc.gameSettings.keyBindAttack.isKeyDown());
             key(fr, 37, 144, 31, "RMB", mc.gameSettings.keyBindUseItem.isKeyDown());
+            HudLayout.end(HudLayout.KEYS, 4, 100, 64, 64);
         }
 
         if (ModuleManager.POTIONS.enabled) {
+            HudLayout.begin(HudLayout.POTIONS);
+            int minPx = w;
             int y = 4;
             for (Object o : mc.thePlayer.getActivePotionEffects()) {
                 PotionEffect pe = (PotionEffect) o;
@@ -58,24 +62,30 @@ public class ExtraHud {
                 int tc = pe.getDuration() < 200 ? 0xFFFF5555 : 0xFFFFFFFF;   // کمتر از ۱۰ ثانیه: قرمز
                 int pw = fr.getStringWidth(name + "  ") + fr.getStringWidth(time) + 14;
                 int px = w - pw - 4;
+                if (px < minPx) minPx = px;
                 Ui.hudPanel(px, y, pw, 14, tc == 0xFFFFFFFF ? BrandingHandler.ORANGE : tc);
                 fr.drawStringWithShadow(name + "  ", px + 9, y + 3, 0xFFDDDDDD);
                 fr.drawStringWithShadow(time, px + 9 + fr.getStringWidth(name + "  "), y + 3, tc);
                 y += 17;
             }
+            HudLayout.end(HudLayout.POTIONS, minPx, 4, w - 4 - minPx, y - 7);
         }
 
         if (ModuleManager.ARMOR.enabled) {
+            HudLayout.begin(HudLayout.ARMOR);
             int y = h / 2 - 50;
             Ui.hudPanel(w - 64, y - 3, 62, 5 * 18 + 4, BrandingHandler.ORANGE);
             for (int i = 3; i >= 0; i--) { item(mc, fr, mc.thePlayer.inventory.armorInventory[i], w, y); y += 18; }
             item(mc, fr, mc.thePlayer.getHeldItem(), w, y);
+            HudLayout.end(HudLayout.ARMOR, w - 64, h / 2 - 53, 62, 94);
         }
 
         if (ModuleManager.REACH.enabled && System.currentTimeMillis() - reachTime < 3000) {
             String s = String.format("%.2f", reachValue);
-            Ui.statPill(fr, w / 2 - (fr.getStringWidth("Reach  " + s) + 14) / 2, h / 2 + 14, "Reach", s,
-                    BrandingHandler.ORANGE, 0xFFFFFFFF);
+            int rw = fr.getStringWidth("Reach  " + s) + 14;
+            HudLayout.begin(HudLayout.REACH);
+            Ui.statPill(fr, w / 2 - rw / 2, h / 2 + 14, "Reach", s, BrandingHandler.ORANGE, 0xFFFFFFFF);
+            HudLayout.end(HudLayout.REACH, w / 2 - rw / 2, h / 2 + 14, rw, 14);
         }
     }
 

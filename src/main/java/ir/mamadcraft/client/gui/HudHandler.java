@@ -26,15 +26,20 @@ public class HudHandler {
     }
 
     private void line(Minecraft mc, int y, String label, String value) {
-        Ui.statPill(mc.fontRendererObj, 4, y, label, value,
+        int pw = Ui.statPill(mc.fontRendererObj, 4, y, label, value,
                 ModuleManager.hud(BrandingHandler.ORANGE, y * 3), ModuleManager.hud(0xFFFFFFFF, y * 3 + 25));
+        if (pw > maxW) maxW = pw;
     }
+
+    private int maxW;
 
     @SubscribeEvent
     public void onHud(RenderGameOverlayEvent.Post e) {
         if (e.type != RenderGameOverlayEvent.ElementType.ALL) return;
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.gameSettings.showDebugInfo || mc.thePlayer == null) return;
+        HudLayout.begin(HudLayout.STATS);
+        maxW = 0;
         int y = 24;
         if (ModuleManager.FPS.enabled) { line(mc, y, "FPS", String.valueOf(Minecraft.getDebugFPS())); y += 17; }
         if (ModuleManager.CPS.enabled) { line(mc, y, "CPS", String.valueOf(cps())); y += 17; }
@@ -48,6 +53,8 @@ public class HudHandler {
         }
         if (ModuleManager.COORDS.enabled) {
             line(mc, y, "XYZ", (int) mc.thePlayer.posX + " " + (int) mc.thePlayer.posY + " " + (int) mc.thePlayer.posZ);
+            y += 17;
         }
+        HudLayout.end(HudLayout.STATS, 4, 24, maxW, y - 27);
     }
 }
