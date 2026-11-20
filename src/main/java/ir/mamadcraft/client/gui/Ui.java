@@ -60,7 +60,7 @@ public final class Ui {
     private static void roundGrad(int x, int y, int w, int h, int r, int top, int bottom) {
         if (w <= 0 || h <= 0) return;
         Minecraft mc = Minecraft.getMinecraft();
-        int sf = new ScaledResolution(mc).getScaleFactor();
+        int sf = scaleFactor(mc);
         float X = x * sf, Y = y * sf, W = w * sf, H = h * sf;
         float R = Math.min(r * sf, Math.min(W, H) / 2f);
         GlStateManager.pushMatrix();
@@ -72,7 +72,16 @@ public final class Ui {
         WorldRenderer wr = t.getWorldRenderer();
         wr.begin(7, DefaultVertexFormats.POSITION_COLOR);
         int rows = (int) H;
+        int cr = (int) Math.ceil(R);
+        boolean fast = rows > 2 * cr + 2;
+        if (fast) {
+            // بخش وسط (بدون گوشه) یک quad با شیب رنگ؛ فقط ردیف‌های گوشه جدا رسم می‌شوند
+            int ct = lerp(top, bottom, cr / (float) Math.max(1, rows - 1));
+            int cb = lerp(top, bottom, (rows - cr) / (float) Math.max(1, rows - 1));
+            quadV(wr, X, Y + cr, X + W, Y + rows - cr, ct, cb);
+        }
         for (int dy = 0; dy < rows; dy++) {
+            if (fast && dy == cr) { dy = rows - cr - 1; continue; }
             float yc = dy + 0.5f, inset = 0f;
             if (yc < R) { float d = R - yc; inset = R - (float) Math.sqrt(R * R - d * d); }
             else if (yc > H - R) { float d = yc - (H - R); inset = R - (float) Math.sqrt(R * R - d * d); }
@@ -89,6 +98,27 @@ public final class Ui {
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();
+    }
+
+    private static int cachedSf = 1, cachedW = -1, cachedH = -1, cachedGui = -1;
+    private static boolean cachedUni;
+
+    /** ScaledResolution فقط وقتی اندازه/تنظیمات عوض شد دوباره ساخته می‌شود (قبلاً در هر مستطیل ساخته می‌شد). */
+    private static int scaleFactor(Minecraft mc) {
+        int gs = mc.gameSettings.guiScale;
+        boolean uni = mc.isUnicode();
+        if (mc.displayWidth != cachedW || mc.displayHeight != cachedH || gs != cachedGui || uni != cachedUni) {
+            cachedSf = new ScaledResolution(mc).getScaleFactor();
+            cachedW = mc.displayWidth; cachedH = mc.displayHeight; cachedGui = gs; cachedUni = uni;
+        }
+        return cachedSf;
+    }
+
+    private static void quadV(WorldRenderer wr, float x0, float y0, float x1, float y1, int ctop, int cbot) {
+        wr.pos(x0, y1, 0).color((cbot >> 16) & 255, (cbot >> 8) & 255, cbot & 255, (cbot >>> 24) & 255).endVertex();
+        wr.pos(x1, y1, 0).color((cbot >> 16) & 255, (cbot >> 8) & 255, cbot & 255, (cbot >>> 24) & 255).endVertex();
+        wr.pos(x1, y0, 0).color((ctop >> 16) & 255, (ctop >> 8) & 255, ctop & 255, (ctop >>> 24) & 255).endVertex();
+        wr.pos(x0, y0, 0).color((ctop >> 16) & 255, (ctop >> 8) & 255, ctop & 255, (ctop >>> 24) & 255).endVertex();
     }
 
     private static void quad(WorldRenderer wr, float x0, float y0, float x1, float y1, int c, float cov) {
