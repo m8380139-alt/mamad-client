@@ -157,6 +157,7 @@ public final class ModuleManager {
             loadSet(p.getProperty("enemies"), enemies);
             // Keep each name in only one list, even if an old or edited config overlaps them.
             enemies.removeAll(friends);
+            ir.mamadcraft.client.gui.HudLayout.load(p);
         } catch (Exception e) {
             System.out.println("[MamadClient] config load failed: " + e);
         }
@@ -174,6 +175,7 @@ public final class ModuleManager {
             for (java.util.Map.Entry<String, Boolean> en : gamingPrev.entrySet()) p.setProperty("gaming.prev." + en.getKey(), String.valueOf(en.getValue()));
             p.setProperty("friends", join(friends));
             p.setProperty("enemies", join(enemies));
+            ir.mamadcraft.client.gui.HudLayout.save(p);
             p.store(out, "Mamad Client");
         } catch (Exception e) {
             System.out.println("[MamadClient] config save failed: " + e);

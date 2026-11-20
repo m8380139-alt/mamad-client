@@ -25,6 +25,10 @@ public class MamadCommand extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender s, String[] a) throws CommandException {
+        if (a.length == 1 && a[0].equalsIgnoreCase("hud")) {
+            ir.mamadcraft.client.gui.HudEditor.openRequested = true;   // در تیک بعدی باز می‌شود
+            return;
+        }
         if (a.length < 2) { help(s); return; }
 
         String cat = a[0].toLowerCase(Locale.ROOT);
@@ -108,5 +112,6 @@ public class MamadCommand extends CommandBase {
         msg(s, "/mamad friend|enemy add|remove|list <name>");
         msg(s, "/mamad crosshair color <RRGGBB> | shape cross|dot|circle");
         msg(s, "/mamad chat hidesystem|spam on|off");
+        msg(s, "/mamad hud  (or press H) - move HUD elements");
     }
 }

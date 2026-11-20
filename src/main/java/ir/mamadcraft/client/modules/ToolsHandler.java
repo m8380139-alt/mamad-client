@@ -82,10 +82,13 @@ public class ToolsHandler {
         }
     }
 
+    private int infoW;
+
     private int line(FontRenderer fr, int w, int y, String label, String value) {
         int pw = fr.getStringWidth(label + "  ") + fr.getStringWidth(value) + 14;
         ir.mamadcraft.client.gui.Ui.statPill(fr, w / 2 - pw / 2, y, label, value,
                 ModuleManager.hud(ORANGE, y * 3), ModuleManager.hud(0xFFFFFFFF, y * 3 + 25));
+        if (pw > infoW) infoW = pw;
         return y + 17;
     }
 
@@ -97,6 +100,8 @@ public class ToolsHandler {
         FontRenderer fr = mc.fontRendererObj;
         int w = e.resolution.getScaledWidth();
         int y = 22;
+        ir.mamadcraft.client.gui.HudLayout.begin(ir.mamadcraft.client.gui.HudLayout.INFO);
+        infoW = 0;
 
         if (ModuleManager.CLOCK.enabled) y = line(fr, w, y, "Time", clockFormat.format(new Date()));
         if (ModuleManager.UPTIME.enabled) {
@@ -113,7 +118,8 @@ public class ToolsHandler {
             y = line(fr, w, y, "Server", sd == null ? "Singleplayer" : sd.serverIP);
         }
         if (ModuleManager.COMBO.enabled && combo > 0 && System.currentTimeMillis() - lastHit < 2500) {
-            line(fr, w, y, "Combo", String.valueOf(combo));
+            y = line(fr, w, y, "Combo", String.valueOf(combo));
         }
+        ir.mamadcraft.client.gui.HudLayout.end(ir.mamadcraft.client.gui.HudLayout.INFO, w / 2 - infoW / 2, 22, infoW, y - 25);
     }
 }

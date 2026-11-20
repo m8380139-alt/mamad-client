@@ -29,7 +29,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 @Mod(modid = MamadClient.MODID, useMetadata = true)
 public class MamadClient {
     public static final String MODID = "mamadclient";
-    private static KeyBinding menuKey;
+    private static KeyBinding menuKey, hudKey;
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
@@ -50,6 +50,8 @@ public class MamadClient {
         ModuleManager.load();
         menuKey = new KeyBinding("Open Mamad Menu", Keyboard.KEY_RSHIFT, "Mamad Client");
         ClientRegistry.registerKeyBinding(menuKey);
+        hudKey = new KeyBinding("Edit HUD", Keyboard.KEY_H, "Mamad Client");
+        ClientRegistry.registerKeyBinding(hudKey);
         System.out.println("[MamadClient] loaded");
     }
 
@@ -58,5 +60,10 @@ public class MamadClient {
         if (e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getMinecraft();
         if (menuKey.isPressed() && mc.currentScreen == null) mc.displayGuiScreen(new MamadMenu());
+        boolean hudPressed = hudKey.isPressed();
+        if ((hudPressed || ir.mamadcraft.client.gui.HudEditor.openRequested) && mc.currentScreen == null && mc.thePlayer != null) {
+            ir.mamadcraft.client.gui.HudEditor.openRequested = false;
+            mc.displayGuiScreen(new ir.mamadcraft.client.gui.HudEditor());
+        }
     }
 }
