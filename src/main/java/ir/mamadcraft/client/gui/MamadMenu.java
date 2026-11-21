@@ -864,6 +864,7 @@ public class MamadMenu extends GuiScreen {
         int scale = Math.max(18, Math.min(130, (int) ((modelH - 28) / 1.9f)));
         int feetY = cy + 12 + (modelH - 28 - (int) (1.9f * scale)) / 2 + (int) (1.9f * scale);
         boolean custom = SkinManager.hasSkin();
+        GlStateManager.color(1f, 1f, 1f, 1f);   // متن رنگی (مثلاً پیام سبز) رنگ OpenGL را عوض می‌کند و مدل را رنگی می‌کرد
         GlStateManager.pushMatrix();
         GlStateManager.translate(px + panelW / 2f, 0f, 50f);
         GlStateManager.rotate(yaw - 180f, 0f, 1f, 0f);
@@ -906,6 +907,7 @@ public class MamadMenu extends GuiScreen {
         GlStateManager.scale(-1f, -1f, 1f);
         GlStateManager.scale(0.9375f, 0.9375f, 0.9375f);
         GlStateManager.translate(0f, -1.5078125f, 0f);
+        GlStateManager.color(1f, 1f, 1f, 1f);
         mc.getTextureManager().bindTexture(tex);
         GlStateManager.enableAlpha();
         GlStateManager.enableBlend();
