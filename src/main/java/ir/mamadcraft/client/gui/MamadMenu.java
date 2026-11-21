@@ -11,6 +11,10 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
+import net.minecraft.client.model.ModelPlayer;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.ResourceLocation;
@@ -857,26 +861,74 @@ public class MamadMenu extends GuiScreen {
         int px = cx + gw + 10;
         Ui.roundRect(px, cy, panelW, ch, 12, 0x28FFFFFF);
         int modelH = ch - 24;
-        if (mc.thePlayer != null) {
-            int scale = Math.max(18, Math.min(62, (int) ((modelH - 24) / 2.1f)));
-            GlStateManager.pushMatrix();
-            GlStateManager.translate(px + panelW / 2f, 0f, 50f);
-            GlStateManager.rotate(yaw - 180f, 0f, 1f, 0f);
-            GlStateManager.translate(-(px + panelW / 2f), 0f, -50f);
+        int scale = Math.max(18, Math.min(62, (int) ((modelH - 24) / 2.1f)));
+        boolean custom = SkinManager.hasSkin();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(px + panelW / 2f, 0f, 50f);
+        GlStateManager.rotate(yaw - 180f, 0f, 1f, 0f);
+        GlStateManager.translate(-(px + panelW / 2f), 0f, -50f);
+        if (mc.thePlayer != null && !custom) {
+            // بدون اسکین دلخواه: خود بازیکن با اسکین واقعی‌اش
             GuiInventory.drawEntityOnScreen(px + panelW / 2, cy + modelH - 8, scale, 0f, 0f, mc.thePlayer);
-            GlStateManager.popMatrix();
-            GlStateManager.enableBlend();
-            centered("Drag to turn", px + panelW / 2, cy + modelH - 2, 0xFF8A8A92);
-        } else if (SkinManager.get() != null) {
-            int size = Math.min(panelW - 40, modelH - 20);
-            mc.getTextureManager().bindTexture(SkinManager.get());
-            GlStateManager.enableBlend();
-            GlStateManager.color(1f, 1f, 1f, 1f);
-            Gui.drawScaledCustomSizeModalRect(px + (panelW - size) / 2, cy + 10, 0, 0, 64, 64, size, size, 64, 64);
-            centered("Join a world to see it on you", px + panelW / 2, cy + ch - 16, 0xFF8A8A92);
         } else {
-            centered("Join a world to preview", px + panelW / 2, cy + ch / 2 - 4, 0xFF8A8A92);
+            // مدل سه‌بعدی با اسکین انتخاب‌شده (بیرون از دنیا هم کار می‌کند)
+            ResourceLocation tex = custom ? SkinManager.get() : DefaultPlayerSkin.getDefaultSkinLegacy();
+            drawSkinModel(px + panelW / 2, cy + modelH - 8, scale, tex, custom && SkinManager.isSlim());
         }
+        GlStateManager.popMatrix();
+        GlStateManager.enableBlend();
+        centered("Drag to turn", px + panelW / 2, cy + modelH - 2, 0xFF8A8A92);
+    }
+
+    private ModelPlayer modelClassic, modelSlim;
+
+    /** مدل سه‌بعدی بازیکن را با یک تکسچر دلخواه می‌کشد (بدون نیاز به entity). */
+    private void drawSkinModel(int x, int y, int scale, ResourceLocation tex, boolean slimArms) {
+        ModelPlayer m;
+        if (slimArms) {
+            if (modelSlim == null) modelSlim = new ModelPlayer(0f, true);
+            m = modelSlim;
+        } else {
+            if (modelClassic == null) modelClassic = new ModelPlayer(0f, false);
+            m = modelClassic;
+        }
+        GlStateManager.enableColorMaterial();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate((float) x, (float) y, 50f);
+        GlStateManager.scale((float) -scale, (float) scale, (float) scale);
+        GlStateManager.rotate(180f, 0f, 0f, 1f);
+        GlStateManager.rotate(135f, 0f, 1f, 0f);
+        RenderHelper.enableStandardItemLighting();
+        GlStateManager.rotate(-135f, 0f, 1f, 0f);
+        GlStateManager.rotate(180f, 0f, 1f, 0f);
+        GlStateManager.enableRescaleNormal();
+        GlStateManager.scale(-1f, -1f, 1f);
+        GlStateManager.scale(0.9375f, 0.9375f, 0.9375f);
+        GlStateManager.translate(0f, -1.5078125f, 0f);
+        mc.getTextureManager().bindTexture(tex);
+        GlStateManager.enableAlpha();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        float u = 0.0625f;
+        m.bipedHead.render(u);
+        m.bipedBody.render(u);
+        m.bipedRightArm.render(u);
+        m.bipedLeftArm.render(u);
+        m.bipedRightLeg.render(u);
+        m.bipedLeftLeg.render(u);
+        m.bipedHeadwear.render(u);
+        m.bipedBodyWear.render(u);
+        m.bipedRightArmwear.render(u);
+        m.bipedLeftArmwear.render(u);
+        m.bipedRightLegwear.render(u);
+        m.bipedLeftLegwear.render(u);
+        GlStateManager.popMatrix();
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+        GlStateManager.disableTexture2D();
+        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+        GlStateManager.color(1f, 1f, 1f, 1f);
     }
 
     private void clickSkin(int mx, int my) {
