@@ -861,19 +861,21 @@ public class MamadMenu extends GuiScreen {
         int px = cx + gw + 10;
         Ui.roundRect(px, cy, panelW, ch, 12, 0x28FFFFFF);
         int modelH = ch - 24;
-        int scale = Math.max(18, Math.min(62, (int) ((modelH - 24) / 2.1f)));
+        int scale = Math.max(18, Math.min(130, (int) ((modelH - 28) / 1.9f)));
+        int feetY = cy + 12 + (modelH - 28 - (int) (1.9f * scale)) / 2 + (int) (1.9f * scale);
         boolean custom = SkinManager.hasSkin();
+        GlStateManager.color(1f, 1f, 1f, 1f);   // متن رنگی (مثلاً پیام سبز) رنگ OpenGL را عوض می‌کند و مدل را رنگی می‌کرد
         GlStateManager.pushMatrix();
         GlStateManager.translate(px + panelW / 2f, 0f, 50f);
         GlStateManager.rotate(yaw - 180f, 0f, 1f, 0f);
         GlStateManager.translate(-(px + panelW / 2f), 0f, -50f);
         if (mc.thePlayer != null && !custom) {
             // بدون اسکین دلخواه: خود بازیکن با اسکین واقعی‌اش
-            GuiInventory.drawEntityOnScreen(px + panelW / 2, cy + modelH - 8, scale, 0f, 0f, mc.thePlayer);
+            GuiInventory.drawEntityOnScreen(px + panelW / 2, feetY, scale, 0f, 0f, mc.thePlayer);
         } else {
             // مدل سه‌بعدی با اسکین انتخاب‌شده (بیرون از دنیا هم کار می‌کند)
             ResourceLocation tex = custom ? SkinManager.get() : DefaultPlayerSkin.getDefaultSkinLegacy();
-            drawSkinModel(px + panelW / 2, cy + modelH - 8, scale, tex, custom && SkinManager.isSlim());
+            drawSkinModel(px + panelW / 2, feetY, scale, tex, custom && SkinManager.isSlim());
         }
         GlStateManager.popMatrix();
         GlStateManager.enableBlend();
@@ -905,10 +907,18 @@ public class MamadMenu extends GuiScreen {
         GlStateManager.scale(-1f, -1f, 1f);
         GlStateManager.scale(0.9375f, 0.9375f, 0.9375f);
         GlStateManager.translate(0f, -1.5078125f, 0f);
+        GlStateManager.color(1f, 1f, 1f, 1f);
         mc.getTextureManager().bindTexture(tex);
         GlStateManager.enableAlpha();
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        // لایهٔ روی (آستین/شلوار/کلاه) باید جای قسمت اصلی بیاید؛ در ماینکرفت همین کار با setRotationAngles می‌شود
+        ModelPlayer.copyModelAngles(m.bipedHead, m.bipedHeadwear);
+        ModelPlayer.copyModelAngles(m.bipedBody, m.bipedBodyWear);
+        ModelPlayer.copyModelAngles(m.bipedRightArm, m.bipedRightArmwear);
+        ModelPlayer.copyModelAngles(m.bipedLeftArm, m.bipedLeftArmwear);
+        ModelPlayer.copyModelAngles(m.bipedRightLeg, m.bipedRightLegwear);
+        ModelPlayer.copyModelAngles(m.bipedLeftLeg, m.bipedLeftLegwear);
         float u = 0.0625f;
         m.bipedHead.render(u);
         m.bipedBody.render(u);
