@@ -25,7 +25,8 @@ import java.util.Properties;
  * و فقط روی بازیکن خودش (سمت کلاینت) نمایش داده می‌شود.
  */
 public final class SkinManager {
-    private static final long MAX_BYTES = 1024 * 1024;
+    private static final long MAX_BYTES = 8 * 1024 * 1024;
+    private static final int MAX_SIZE = 1024;   // حداکثر عرض اسکین HD
 
     private static volatile ResourceLocation active;      // تکسچر آمادهٔ نمایش (فقط ترد اصلی می‌سازد)
     private static volatile boolean slim;                 // مدل دست باریک (Alex)
@@ -124,7 +125,7 @@ public final class SkinManager {
             }
         };
         fc.setDialogTitle("Choose your Minecraft skin (.png)");
-        fc.setFileFilter(new FileNameExtensionFilter("PNG skin (64x64 or 64x32)", "png"));
+        fc.setFileFilter(new FileNameExtensionFilter("PNG skin (64 to 1024 px, HD ok)", "png"));
         fc.setAcceptAllFileFilterUsed(false);
         File start = new File(System.getProperty("user.home"), "Downloads");
         if (start.isDirectory()) fc.setCurrentDirectory(start);
@@ -165,7 +166,10 @@ public final class SkinManager {
     private static String validate(BufferedImage img) {
         if (img == null) return "This is not a valid PNG";
         int w = img.getWidth(), h = img.getHeight();
-        if (w != 64 || (h != 64 && h != 32)) return "Size must be 64x64 or 64x32 (yours: " + w + "x" + h + ")";
+        // عرض: ۶۴، ۱۲۸، ۲۵۶، ۵۱۲ یا ۱۰۲۴ (توان ۲)؛ ارتفاع: برابر عرض (جدید) یا نصف عرض (قدیمی)
+        boolean okW = w >= 64 && w <= MAX_SIZE && (w & (w - 1)) == 0;
+        boolean okH = h == w || h * 2 == w;
+        if (!okW || !okH) return "Size must be 64, 128, 256, 512 or 1024 wide, square or half height (yours: " + w + "x" + h + ")";
         return null;
     }
 
