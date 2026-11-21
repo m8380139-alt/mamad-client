@@ -4,6 +4,7 @@ import ir.mamadcraft.client.account.SiteAccount;
 import ir.mamadcraft.client.cosmetics.CapeManager;
 import ir.mamadcraft.client.cosmetics.CapeStore;
 import ir.mamadcraft.client.cosmetics.ImageCache;
+import ir.mamadcraft.client.cosmetics.SkinManager;
 import ir.mamadcraft.client.modules.ModuleManager;
 import ir.mamadcraft.client.modules.ToolsHandler;
 import net.minecraft.client.gui.Gui;
@@ -35,7 +36,7 @@ public class MamadMenu extends GuiScreen {
     private static final int GAP = 8;
     private static final int CARD_H = 74;   // ارتفاع کارت ماژول
     private static final int PROF_H = 52;   // ارتفاع ردیف پروفایل
-    private static final int TABS = 3;
+    private static final int TABS = 4;
 
     private static final String[] CATS = {"All", "PvP", "HUD", "Visual", "Utility", "Perf"};
     private static final int[] SWATCHES = {0x8B5CF6, 0xFF3B3B, 0xFFD60A, 0x4CD964, 0x32D4FF, 0x5E7CFF, 0xB26BFF, 0xFFFFFF};
@@ -59,7 +60,7 @@ public class MamadMenu extends GuiScreen {
     };
 
     private final GuiScreen parent;
-    private int tab = 0;                    // 0 = Tools، 1 = Cape، 2 = Profiles
+    private int tab = 0;                    // 0 = Tools، 1 = Cape، 2 = Profiles، 3 = Skin
     private int cat = 0;                    // دستهٔ انتخاب‌شده در Tools
     private String selMod;                  // ماژول انتخاب‌شده (پنل جزئیات)
     private String search = "";
@@ -184,6 +185,12 @@ public class MamadMenu extends GuiScreen {
         Ui.roundRect(x + 1, y, 4, 4, 2, color);
         Ui.roundRect(x + 7, y + 4, 4, 4, 2, color);
         Ui.roundRect(x + 3, y + 8, 4, 4, 2, color);
+    }
+
+    /** آیکون تب Skin: سر و بدن. */
+    private void personIcon(int x, int y, int color) {
+        Ui.roundRect(x + 3, y, 6, 6, 2, color);
+        Ui.roundRect(x, y + 7, 12, 5, 2, color);
     }
 
     private void clip(int x, int y, int w, int h) {
@@ -333,7 +340,8 @@ public class MamadMenu extends GuiScreen {
 
         if (tab == 0) drawTools(mx, my);
         else if (tab == 1) drawCapes(mx, my);
-        else drawProfiles(mx, my);
+        else if (tab == 2) drawProfiles(mx, my);
+        else drawSkin(mx, my);
 
         GlStateManager.color(1f, 1f, 1f, 1f);
     }
@@ -343,8 +351,8 @@ public class MamadMenu extends GuiScreen {
         fontRendererObj.drawStringWithShadow("Mamad Client", x0 + 46, y0 + 16, 0xFFFFFFFF);
         fontRendererObj.drawString("1.8.9", x0 + 46, y0 + 27, 0xFF8A8A92);
 
-        String[] names = {"Tools", "Cape", "Profiles"};
-        ResourceLocation[] icons = {ICON_GEAR, ICON_CAPE, null};
+        String[] names = {"Tools", "Cape", "Profiles", "Skin"};
+        ResourceLocation[] icons = {ICON_GEAR, ICON_CAPE, null, null};
         int nx = x0 + 12, nw = SW - 18;
 
         // نشانگر متحرک تب انتخاب‌شده
@@ -359,6 +367,7 @@ public class MamadMenu extends GuiScreen {
             if (!sel && hov) Ui.roundRect(nx, ny, nw, 28, 10, 0x22FFFFFF);
             int col = sel ? Ui.ACCENT : 0xFFD0D0D6;
             if (icons[i] != null) icon(icons[i], nx + 9, ny + 8, 12, col);
+            else if (i == 3) personIcon(nx + 9, ny + 8, col);
             else slidersIcon(nx + 9, ny + 8, col);
             fontRendererObj.drawString(names[i], nx + 28, ny + 10, sel ? 0xFFFFFFFF : 0xFFC8C8CE);
         }
@@ -378,7 +387,7 @@ public class MamadMenu extends GuiScreen {
     }
 
     private void drawHeader(int mx, int my) {
-        String title = tab == 0 ? "Tools" : tab == 1 ? "Cape" : "Profiles";
+        String title = tab == 0 ? "Tools" : tab == 1 ? "Cape" : tab == 2 ? "Profiles" : "Skin";
         fontRendererObj.drawStringWithShadow(title, cx, y0 + 14, 0xFFFFFFFF);
         String sub;
         int subColor = 0xFF8A8A92;
@@ -388,6 +397,8 @@ public class MamadMenu extends GuiScreen {
             sub = visibleModules().size() + " modules  -  " + enabled + " on";
         } else if (tab == 2) {
             sub = "One-click module sets";
+        } else if (tab == 3) {
+            sub = SkinManager.hasSkin() ? "Custom skin on  -  only you see it" : "Using your normal skin";
         } else if (!SiteAccount.isLoggedIn()) {
             sub = "Sign in to use your capes";
         } else if (!CapeStore.status.isEmpty()) {
@@ -400,7 +411,7 @@ public class MamadMenu extends GuiScreen {
         }
         fontRendererObj.drawString(sub, cx, y0 + 27, subColor);
 
-        if (tab == 2) return;   // Profiles جستجو ندارد
+        if (tab >= 2) return;   // Profiles و Skin جستجو ندارند
         int sw = 132, sx = x0 + W - 14 - sw, sy = y0 + 12;
         if (searchFocus) Ui.roundRectBorder(sx, sy, sw, 20, 10, Ui.FIELD, Ui.ACCENT);
         else Ui.roundRect(sx, sy, sw, 20, 10, 0xFF2A2A2E);
@@ -786,6 +797,97 @@ public class MamadMenu extends GuiScreen {
         }
     }
 
+    // ---------------------------------------------------------------- Skin
+
+    private int[] skinRect(int i) {
+        int gw = cw - 164 - 10;
+        int fw = Math.min(gw - 28, 220);
+        int x = cx + 14;
+        int half = (fw - 6) / 2;
+        switch (i) {
+            case 0: return new int[]{x, cy + 60, Math.min(fw, 180), 24};
+            case 1: return new int[]{x, cy + 108, half, 20};
+            case 2: return new int[]{x + half + 6, cy + 108, half, 20};
+            default: return new int[]{x, cy + 140, fw, 20};
+        }
+    }
+
+    private boolean skinHit(int i, int mx, int my) {
+        int[] r = skinRect(i);
+        return Ui.inside(mx, my, r[0], r[1], r[2], r[3]);
+    }
+
+    private void drawSkin(int mx, int my) {
+        int panelW = 164;
+        int gw = cw - panelW - 10;
+
+        Ui.roundRect(cx, cy, gw, ch, 12, 0x28FFFFFF);
+        fontRendererObj.drawStringWithShadow("Custom skin", cx + 14, cy + 14, 0xFFFFFFFF);
+        fontRendererObj.drawString("Pick a skin file from your computer.", cx + 14, cy + 28, 0xFF8A8A92);
+        fontRendererObj.drawString("PNG 64x64 or 64x32. Only you can see it.", cx + 14, cy + 40, 0xFF8A8A92);
+
+        int[] r = skinRect(0);
+        if (SkinManager.isBusy()) {
+            Ui.roundRect(r[0], r[1], r[2], r[3], 12, 0x30FFFFFF);
+            centered("Waiting for file...", r[0] + r[2] / 2, r[1] + 8, 0xFF8A8A92);
+        } else {
+            button("Choose file...", r[0], r[1], r[2], r[3], Ui.ACCENT, Ui.ACCENT_HOVER, 0xFFFFFFFF, mx, my);
+        }
+
+        fontRendererObj.drawString("Arm model", cx + 14, cy + 96, 0xFF8A8A92);
+        boolean slim = SkinManager.isSlim();
+        int[] a = skinRect(1), b = skinRect(2);
+        button("Classic", a[0], a[1], a[2], a[3], slim ? Ui.BTN : Ui.ACCENT, slim ? Ui.BTN_HOVER : Ui.ACCENT_HOVER, 0xFFFFFFFF, mx, my);
+        button("Slim", b[0], b[1], b[2], b[3], slim ? Ui.ACCENT : Ui.BTN, slim ? Ui.ACCENT_HOVER : Ui.BTN_HOVER, 0xFFFFFFFF, mx, my);
+
+        int[] d = skinRect(3);
+        if (SkinManager.hasSkin()) {
+            button("Reset to default skin", d[0], d[1], d[2], d[3], Ui.BTN, Ui.BTN_HOVER, 0xFFFFFFFF, mx, my);
+        } else {
+            Ui.roundRect(d[0], d[1], d[2], d[3], 10, 0x30FFFFFF);
+            centered("Reset to default skin", d[0] + d[2] / 2, d[1] + 6, 0xFF6A6A72);
+        }
+
+        String st = SkinManager.status();
+        if (!st.isEmpty()) {
+            text(fontRendererObj.trimStringToWidth(st, gw - 28), cx + 14, cy + 170, SkinManager.statusIsError() ? 0xFFFF6B6B : 0xFF6BE675);
+        }
+
+        // پیش‌نمایش
+        int px = cx + gw + 10;
+        Ui.roundRect(px, cy, panelW, ch, 12, 0x28FFFFFF);
+        int modelH = ch - 24;
+        if (mc.thePlayer != null) {
+            int scale = Math.max(18, Math.min(62, (int) ((modelH - 24) / 2.1f)));
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(px + panelW / 2f, 0f, 50f);
+            GlStateManager.rotate(yaw - 180f, 0f, 1f, 0f);
+            GlStateManager.translate(-(px + panelW / 2f), 0f, -50f);
+            GuiInventory.drawEntityOnScreen(px + panelW / 2, cy + modelH - 8, scale, 0f, 0f, mc.thePlayer);
+            GlStateManager.popMatrix();
+            GlStateManager.enableBlend();
+            centered("Drag to turn", px + panelW / 2, cy + modelH - 2, 0xFF8A8A92);
+        } else if (SkinManager.get() != null) {
+            int size = Math.min(panelW - 40, modelH - 20);
+            mc.getTextureManager().bindTexture(SkinManager.get());
+            GlStateManager.enableBlend();
+            GlStateManager.color(1f, 1f, 1f, 1f);
+            Gui.drawScaledCustomSizeModalRect(px + (panelW - size) / 2, cy + 10, 0, 0, 64, 64, size, size, 64, 64);
+            centered("Join a world to see it on you", px + panelW / 2, cy + ch - 16, 0xFF8A8A92);
+        } else {
+            centered("Join a world to preview", px + panelW / 2, cy + ch / 2 - 4, 0xFF8A8A92);
+        }
+    }
+
+    private void clickSkin(int mx, int my) {
+        if (skinHit(0, mx, my)) { if (!SkinManager.isBusy()) SkinManager.chooseFile(); return; }
+        if (skinHit(1, mx, my)) { SkinManager.setSlim(false); return; }
+        if (skinHit(2, mx, my)) { SkinManager.setSlim(true); return; }
+        if (skinHit(3, mx, my)) { if (SkinManager.hasSkin()) SkinManager.reset(); return; }
+        int px = cx + cw - 164;
+        if (Ui.inside(mx, my, px, cy, 164, ch)) { dragging = true; lastDragX = mx; }
+    }
+
     // ---------------------------------------------------------------- ورودی
 
     @Override
@@ -808,14 +910,15 @@ public class MamadMenu extends GuiScreen {
 
         // جستجو
         int sw = 132, sx = x0 + W - 14 - sw, sy = y0 + 12;
-        searchFocus = tab != 2 && Ui.inside(mx, my, sx, sy, sw, 20);
+        searchFocus = tab < 2 && Ui.inside(mx, my, sx, sy, sw, 20);
         if (searchFocus) return;
 
         if (!Ui.inside(mx, my, x0, y0, W, H)) { close(); return; }
 
         if (tab == 0) clickTools(mx, my);
         else if (tab == 1) clickCapes(mx, my);
-        else clickProfiles(mx, my);
+        else if (tab == 2) clickProfiles(mx, my);
+        else clickSkin(mx, my);
     }
 
     private int cardAt(int mx, int my, int count) {
@@ -968,10 +1071,11 @@ public class MamadMenu extends GuiScreen {
     protected void keyTyped(char c, int key) throws IOException {
         if (key == Keyboard.KEY_ESCAPE || key == Keyboard.KEY_RSHIFT) { close(); return; }
         if (!searchFocus) {
-            // میان‌بر تب‌ها: 1 / 2 / 3
+            // میان‌بر تب‌ها: 1 / 2 / 3 / 4
             if (key == Keyboard.KEY_1) setTab(0);
             else if (key == Keyboard.KEY_2) setTab(1);
             else if (key == Keyboard.KEY_3) setTab(2);
+            else if (key == Keyboard.KEY_4) setTab(3);
             return;
         }
         if (key == Keyboard.KEY_RETURN) { searchFocus = false; return; }
