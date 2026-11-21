@@ -34,6 +34,7 @@ public class MamadClient {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         CapeManager.init();
+        ir.mamadcraft.client.cosmetics.SkinManager.init();
         MinecraftForge.EVENT_BUS.register(new BrandingHandler());
         MinecraftForge.EVENT_BUS.register(new HudHandler());
         MinecraftForge.EVENT_BUS.register(new ExtraHud());
