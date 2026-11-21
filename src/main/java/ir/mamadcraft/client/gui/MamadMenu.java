@@ -824,7 +824,7 @@ public class MamadMenu extends GuiScreen {
         Ui.roundRect(cx, cy, gw, ch, 12, 0x28FFFFFF);
         fontRendererObj.drawStringWithShadow("Custom skin", cx + 14, cy + 14, 0xFFFFFFFF);
         fontRendererObj.drawString("Pick a skin file from your computer.", cx + 14, cy + 28, 0xFF8A8A92);
-        fontRendererObj.drawString("PNG 64x64 or 64x32. Only you can see it.", cx + 14, cy + 40, 0xFF8A8A92);
+        fontRendererObj.drawString("PNG 64 to 1024 px (HD ok). Only you can see it.", cx + 14, cy + 40, 0xFF8A8A92);
 
         int[] r = skinRect(0);
         if (SkinManager.isBusy()) {
