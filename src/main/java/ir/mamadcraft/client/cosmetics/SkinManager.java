@@ -82,7 +82,7 @@ public final class SkinManager {
                 try { p.load(in); } finally { in.close(); }
             }
             slim = "true".equals(p.getProperty("slim"));
-            BufferedImage img = ImageIO.read(f);
+            BufferedImage img = SafeImage.read(f, MAX_SIZE, MAX_BYTES);
             if (validate(img) == null) apply(img);
         } catch (Exception e) {
             System.out.println("[MamadClient] skin load failed: " + e);
@@ -136,7 +136,7 @@ public final class SkinManager {
         try {
             if (!f.isFile() || !f.getName().toLowerCase().endsWith(".png")) { setStatus("Pick a .png file", true); return; }
             if (f.length() > MAX_BYTES) { setStatus("File is too big", true); return; }
-            BufferedImage img = ImageIO.read(f);
+            BufferedImage img = SafeImage.read(f, MAX_SIZE, MAX_BYTES);
             String err = validate(img);
             if (err != null) { setStatus(err, true); return; }
 

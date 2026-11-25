@@ -85,7 +85,13 @@ public final class SiteAccount {
             JsonObject o = new JsonObject();
             o.addProperty("username", username);
             o.addProperty("refreshToken", refreshToken);
-            Files.write(file().toPath(), o.toString().getBytes(StandardCharsets.UTF_8));
+            File f = file();
+            Files.write(f.toPath(), o.toString().getBytes(StandardCharsets.UTF_8));
+            // فقط خود کاربر بتواند فایل توکن را بخواند (روی سیستم‌هایی که پشتیبانی می‌کنند)
+            f.setReadable(false, false);
+            f.setReadable(true, true);
+            f.setWritable(false, false);
+            f.setWritable(true, true);
         } catch (Exception ignored) {}
     }
 
@@ -195,6 +201,7 @@ public final class SiteAccount {
 
     private static String[] post(String url, JsonObject body, String bearer) throws Exception {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+        c.setInstanceFollowRedirects(false);   // توکن/رمز هرگز به آدرس دیگری فرستاده نشود
         c.setConnectTimeout(10000);
         c.setReadTimeout(10000);
         c.setRequestMethod("POST");
@@ -214,8 +221,12 @@ public final class SiteAccount {
     private static byte[] readAll(InputStream in) throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buf = new byte[4096];
-        int n;
-        while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+        int n, total = 0;
+        while ((n = in.read(buf)) > 0) {
+            total += n;
+            if (total > 1024 * 1024) { in.close(); throw new Exception("response too large"); }
+            out.write(buf, 0, n);
+        }
         in.close();
         return out.toByteArray();
     }

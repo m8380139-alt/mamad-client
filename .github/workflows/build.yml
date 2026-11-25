@@ -3,14 +3,18 @@ on:
   - push
   - pull_request
 
+# پیش‌فرض: فقط خواندن. دسترسی نوشتن فقط برای مرحلهٔ انتشار (job جدا) داده می‌شود.
+permissions:
+  contents: read
+
 jobs:
   gradle:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout source
         uses: actions/checkout@v4.1.1
+        with:
+          persist-credentials: false
 
       - name: Setup Java
         uses: actions/setup-java@v4.0.0
@@ -30,10 +34,23 @@ jobs:
           name: mod-jar
           path: build/libs/*.jar
 
+  release:
+    needs: gradle
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download built JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: mod-jar
+          path: build/libs
+
       - name: Publish latest release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           cp "$(ls build/libs/mamadclient-*.jar | head -1)" mamadclient.jar
           gh release delete latest --yes --cleanup-tag || true
