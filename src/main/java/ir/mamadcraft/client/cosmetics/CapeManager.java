@@ -114,6 +114,7 @@ public final class CapeManager {
         body.add("variables", vars);
 
         HttpURLConnection c = (HttpURLConnection) new URL(GRAPHQL_URL).openConnection();
+        c.setInstanceFollowRedirects(false);
         c.setConnectTimeout(8000);
         c.setReadTimeout(8000);
         c.setRequestMethod("POST");
@@ -160,14 +161,15 @@ public final class CapeManager {
     }
 
     private static void download(final String name, final String url) throws Exception {
-        if (!url.startsWith(ALLOWED_PREFIX) || !url.endsWith(".png")) return;
+        if (!url.startsWith(ALLOWED_PREFIX) || !url.endsWith(".png") || url.contains("..")) return;
 
         HttpURLConnection ic = (HttpURLConnection) new URL(url).openConnection();
+        ic.setInstanceFollowRedirects(false);   // جلوگیری از رفتن به دامنهٔ دیگر
         ic.setConnectTimeout(8000);
         ic.setReadTimeout(15000);
         ic.setRequestProperty("User-Agent", "MamadClient/1.0");
         if (ic.getResponseCode() != 200) return;
-        final BufferedImage img = ImageIO.read(new ByteArrayInputStream(readAll(ic.getInputStream())));
+        final BufferedImage img = SafeImage.read(readAll(ic.getInputStream()), 1024);
         if (img == null) return;
         int w = img.getWidth(), h = img.getHeight();
         // فرمت استاندارد کیپ: نسبت ۲:۱ و مضرب ۶۴×۳۲ (حداکثر ۱۰۲۴×۵۱۲)

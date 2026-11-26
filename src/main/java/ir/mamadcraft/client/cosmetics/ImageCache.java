@@ -53,7 +53,7 @@ public final class ImageCache {
 
     /** از ترد اصلی صدا بزن. اگر هنوز آماده نباشد null برمی‌گرداند و دانلود را شروع می‌کند. */
     public static Img get(final String url) {
-        if (url == null || !url.startsWith(ALLOWED_PREFIX) || !url.endsWith(".png")) return null;
+        if (url == null || !url.startsWith(ALLOWED_PREFIX) || !url.endsWith(".png") || url.contains("..")) return null;
         Img i = done.get(url);
         if (i != null) return i;
         if (!failed.contains(url) && loading.add(url)) {
@@ -61,6 +61,7 @@ public final class ImageCache {
                 public void run() {
                     try {
                         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                        c.setInstanceFollowRedirects(false);   // جلوگیری از رفتن به دامنهٔ دیگر
                         c.setConnectTimeout(8000);
                         c.setReadTimeout(8000);
                         c.setRequestProperty("User-Agent", "MamadClient/1.0");
@@ -75,7 +76,7 @@ public final class ImageCache {
                             out.write(buf, 0, n);
                         }
                         in.close();
-                        final BufferedImage img = ImageIO.read(new ByteArrayInputStream(out.toByteArray()));
+                        final BufferedImage img = SafeImage.read(out.toByteArray(), 1024);
                         if (img == null) throw new RuntimeException("bad png");
                         Minecraft.getMinecraft().addScheduledTask(new Runnable() {
                             public void run() {
