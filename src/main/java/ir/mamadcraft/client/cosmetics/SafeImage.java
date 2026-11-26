@@ -36,10 +36,12 @@ public final class SafeImage {
             if (!it.hasNext()) return null;
             ImageReader reader = it.next();
             try {
-                reader.setInput(in, true, true);
+                reader.setInput(in, false, true);
                 int w = reader.getWidth(0), h = reader.getHeight(0);
                 if (w <= 0 || h <= 0 || w > maxDim || h > maxDim) return null;
                 return reader.read(0);
+            } catch (IOException | RuntimeException e) {
+                return null;   // فایل خراب یا غیر PNG: مثل قبل «بدون تصویر» حساب می‌شود
             } finally {
                 reader.dispose();
             }
